@@ -46,19 +46,22 @@ main{flex:1 0 440px;position:relative;margin:0 20px 14px;background:var(--card);
 table{border-collapse:separate;border-spacing:0;table-layout:fixed}
 th,td{padding:0 6px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 thead th{position:sticky;background:var(--g1);color:#fff;font-weight:600;font-size:11.5px;text-align:center;z-index:5;border-bottom:1px solid rgba(255,255,255,.25);border-right:1px solid rgba(255,255,255,.18)}
-thead tr.h1 th{top:0;height:28px}
+thead tr.h1 th{top:0;height:56px;position:sticky}
+thead th{position:sticky}
+thead th.gLB{background:#5d6f65}
+thead th.gAT{background:var(--g1)}
 thead tr.h2 th{top:28px;height:28px;font-weight:500}
 thead th.gLB{background:#5d6f65}thead th.gRE{background:#0b3d5c}thead th.gAT{background:var(--g1)}
 td{height:var(--rowh);font-size:12.5px}
 td.d{text-align:center;font-variant-numeric:tabular-nums}
-td.lb{color:var(--lb)}td.re{color:var(--real);font-weight:600;background:#f1f6fa}td.at{background:var(--g4)}
+td.ix{color:var(--mut)}td.lb{color:var(--lb)}td.re{color:var(--real);font-weight:600;background:#f1f6fa}td.at{background:var(--g4)}
 td.late{color:var(--late);font-weight:600}td.early{color:var(--ok);font-weight:600}
-.sticky1{position:sticky;left:0;z-index:3;background:#fff}
-.sticky2{position:sticky;left:var(--idw);z-index:3;background:#fff;border-right:2px solid var(--line)}
-thead .sticky1,thead .sticky2{z-index:7;background:var(--g1)}
-tr:hover td{background:#eef6ec}tr:hover td.sticky1,tr:hover td.sticky2{background:#eef6ec}
+.stk{position:sticky;z-index:3;background:#fff}
+.stl{border-right:2px solid var(--line)}
+thead .stk{z-index:7;background:var(--g1)}
+tr:hover td{background:#eef6ec}tr:hover td.stk{background:#eef6ec}
 tr.sel td{background:#dff0da!important}
-tr.root td{font-weight:600;background:var(--g3)}tr.root td.sticky1,tr.root td.sticky2{background:var(--g3)}
+tr.root td{font-weight:600;background:var(--g3)}tr.root td.stk{background:var(--g3)}
 tr.ctx td.nm{opacity:.55}
 tr.dup td.nm{font-style:italic;color:var(--mut)}
 tr.flash td{animation:fl 1.6s}
@@ -112,6 +115,20 @@ aside li:hover{background:var(--g3)}
 aside li small{color:var(--mut);display:block}
 th[data-sk]{cursor:pointer;user-select:none}
 th[data-sk]:hover{filter:brightness(1.25)}
+thead th[data-c]{cursor:grab;padding:0 17px 0 4px}
+thead th.gt{padding:0}
+.cx{position:absolute;right:2px;top:1px;width:15px;height:15px;line-height:15px;text-align:center;font-size:9px;border-radius:50%;opacity:.35;cursor:pointer}
+th:hover .cx{opacity:1;background:rgba(255,255,255,.25)}
+th.alvo-a{box-shadow:inset 3px 0 0 #ffd54f}th.alvo-d{box-shadow:inset -3px 0 0 #ffd54f}
+#cbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 20px 8px}
+#cbar .grp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g1);min-width:52px}
+#cchips{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
+.cc{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--g2);border-radius:14px;background:#fff;color:var(--g1);font-size:12px;cursor:grab;user-select:none}
+.cc b{font-weight:400;font-size:10px;color:var(--mut);cursor:pointer;padding:0 1px}.cc b:hover{color:var(--late)}
+.cc b[data-m]:hover{color:var(--g1)}
+.cc.off{border-style:dashed;color:var(--mut);background:#f6f9f7;cursor:pointer}
+.cc.alvo-a{box-shadow:inset 3px 0 0 var(--amb)}.cc.alvo-d{box-shadow:inset -3px 0 0 var(--amb)}
+body.vazio #cbar{display:none}
 .sa{font-size:9px;margin-left:4px;opacity:.95}
 .rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;z-index:8}
 .rz:hover,.rz.on{background:rgba(255,255,255,.4)}
@@ -311,12 +328,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <label class="dk"><input type="checkbox" id="nmwrap"> Quebrar texto</label>
   <span class="sep dk"></span>
   <label class="dk">Zoom <input type="range" id="zm" min="0.5" max="6" step="0.1" value="1.6"></label>
-  <span class="sep dk"></span>
-  <span class="grp dk">Colunas</span>
-  <label class="dk"><input type="checkbox" id="gLB" checked> Linha de base</label>
-  <label class="dk"><input type="checkbox" id="gAT" checked> Atual</label>
-  <label class="dk"><input type="checkbox" id="gCH" checked> Cadeia</label>
-  <button id="bcsv" class="pri" style="margin-left:auto">Exportar vista (CSV)</button>
+        <button id="bcsv" class="pri" style="margin-left:auto">Exportar vista (CSV)</button>
 </div>
 <div class="legend">
   <span><i class="sw" style="background:var(--ok)"></i>Concluída</span>
@@ -329,6 +341,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
   <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
 </div>
+<div id="cbar" class="dk"><span class="grp">Colunas</span><span id="cchips"></span><button id="crst" title="Mostrar todas as colunas na ordem original">Restaurar colunas</button></div>
 <details class="how" id="howd"><summary>Como ler os cartões</summary>
   <p><b>Linha de base</b>: datas planejadas originalmente (referência fixa).</p>
   <p><b>Atual</b>: datas vigentes do cronograma. Fica <b style="color:var(--late)">vermelha</b> se passou da linha de base e <b style="color:var(--ok)">verde</b> se está antes.</p>
@@ -673,32 +686,95 @@ function ganttCell(t) {
   h += `<div class="lab" style="left:${endX}px">${fmt(t.s)}${d.s !== d.f ? ' – ' + fmt(t.f) : ''}</div>`;
   return h;
 }
-function row(n) {
-  const t = T[n.k], st = status(t), ch = chain(n.k), hasK = n.kids.length > 0;
-  const open = hasK && (ACT || S.exp.has(n.key));
-  const dv = dvF(t), dvc = dv == null ? 'z' : dv > 0 ? 'p' : dv < 0 ? 'n' : 'z';
+/* ---------- colunas: ocultar, reexibir e reordenar ---------- */
+let GW = 0, STK_W = 0;
+const COLS = {
+  id:  {t: 'ID', w: 56, h: 'id', sk: 'id'},
+  nm:  {t: 'Tarefa · cascata de sucessoras', n: 'Tarefa', w: () => NM_W, h: 'nm', sk: 'nm', fixa: true},          // a árvore não pode ser ocultada
+  rel: {t: 'Relação', w: 86, h: 'rel'},
+  lbS: {t: 'LB<br>início', w: 84, h: 'lb', sk: 'lbS', th: 'gLB'},
+  lbF: {t: 'LB<br>término', w: 84, h: 'lb', sk: 'lbF', th: 'gLB'},
+  s:   {t: 'Atual<br>início', w: 84, h: 'at', sk: 's', th: 'gAT'},
+  f:   {t: 'Atual<br>término', w: 84, h: 'at', sk: 'f', th: 'gAT'},
+  dv:  {t: 'Desvio<br>término', w: 92, h: 'dv', sk: 'dv'},
+  pc:  {t: '%', w: 54, h: 'pc', sk: 'pc'},
+  ch:  {t: 'Cadeia<br>suc. · fim', w: 126, h: 'ch', sk: 'ch'},
+  gt:  {t: 'Linha do tempo', w: () => GW, h: 'gt'}
+};
+const COL_PADRAO = Object.keys(COLS), nomeCol = k => COLS[k].n || COLS[k].t.replace(/<br>/g, ' ');
+const colW = k => typeof COLS[k].w === 'function' ? COLS[k].w() : COLS[k].w;
+S.ord = COL_PADRAO.slice(); S.hid = new Set();
+try {
+  const sv = JSON.parse(localStorage.getItem('combio_cols') || 'null');
+  if (sv && Array.isArray(sv.ord)) { S.ord = sv.ord.filter(k => COLS[k]); COL_PADRAO.forEach(k => { if (!S.ord.includes(k)) S.ord.push(k); }); S.hid = new Set((sv.hid || []).filter(k => COLS[k] && !COLS[k].fixa)); }
+} catch (e) {}
+const salvarCols = () => { try { localStorage.setItem('combio_cols', JSON.stringify({ord: S.ord, hid: [...S.hid]})); } catch (e) {} };
+const colsVis = () => S.ord.filter(k => !S.hid.has(k));
+function ocultarCol(k) { if (COLS[k].fixa) return; S.hid.add(k); salvarCols(); render(); }
+function mostrarCol(k) { S.hid.delete(k); salvarCols(); render(); }
+function moverCol(k, delta) {
+  const o = S.ord, i = o.indexOf(k); let j = i + delta;
+  while (j >= 0 && j < o.length && S.hid.has(o[j])) j += delta;
+  if (j < 0 || j >= o.length) return;
+  o.splice(i, 1); o.splice(j, 0, k); salvarCols(); render();
+}
+function soltarCol(k, alvo, depois) {
+  if (k === alvo) return;
+  const o = S.ord; o.splice(o.indexOf(k), 1); const j = o.indexOf(alvo); o.splice(depois ? j + 1 : j, 0, k); salvarCols(); render();
+}
+function restaurarCols() { S.ord = COL_PADRAO.slice(); S.hid = new Set(); salvarCols(); render(); }
+function painelCols() {
+  $('cchips').innerHTML = S.ord.map(k => S.hid.has(k)
+    ? `<span class="cc off" data-c="${k}" data-show="${k}" title="Clique para reexibir">＋ ${nomeCol(k)}</span>`
+    : `<span class="cc" draggable="true" data-c="${k}" title="Arraste para reordenar"><b class="cm" data-m="-1" title="Mover para a esquerda">◀</b>${nomeCol(k)}<b class="cm" data-m="1" title="Mover para a direita">▶</b>${COLS[k].fixa ? '' : `<b class="cm" data-x="${k}" title="Ocultar">✕</b>`}</span>`).join('');
+}
+let colArrasto = null;
+document.addEventListener('dragstart', e => { const c = e.target.closest && e.target.closest('[data-c][draggable="true"]'); if (!c) return; colArrasto = c.dataset.c; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'col:' + colArrasto); });
+document.addEventListener('dragend', () => { colArrasto = null; document.querySelectorAll('.alvo-a,.alvo-d').forEach(x => x.classList.remove('alvo-a', 'alvo-d')); });
+document.addEventListener('dragover', e => {
+  const c = colArrasto && e.target.closest && e.target.closest('[data-c]'); if (!c) return;
+  e.preventDefault(); const r = c.getBoundingClientRect(), dep = e.clientX > r.left + r.width / 2;
+  document.querySelectorAll('.alvo-a,.alvo-d').forEach(x => x.classList.remove('alvo-a', 'alvo-d')); c.classList.add(dep ? 'alvo-d' : 'alvo-a');
+});
+document.addEventListener('drop', e => {
+  const c = colArrasto && e.target.closest && e.target.closest('[data-c]'); if (!c) return;
+  e.preventDefault(); e.stopPropagation(); const r = c.getBoundingClientRect(); soltarCol(colArrasto, c.dataset.c, e.clientX > r.left + r.width / 2); colArrasto = null;
+}, true);
+
+function celula(k, n, ctx) {
+  const {t, st, ch, dv, dvc, hasK, open, stk} = ctx, sty = stk[k] !== undefined ? ` style="left:${stk[k]}px"` : '', sc = stk[k] !== undefined ? ' stk' + (ctx.ultimo === k ? ' stl' : '') : '';
+  switch (k) {
+    case 'id': return `<td class="d ix${sc}"${sty}>${t.id}</td>`;
+    case 'nm': {
+      const tg = hasK ? `<span class="tg" data-t="${n.key}">${open ? '▾' : '▸'}</span>` : '<span class="tg none">▸</span>';
+      const bd = n.dup ? `<span class="badge dup" data-f="${n.first}" title="Já listada acima nesta dependência. Clique para ir até lá.">↩ repetida</span>`
+               : hasK ? `<span class="badge" title="Sucessoras diretas">↳ ${n.kids.length}</span>` : '';
+      return `<td class="nm${sc}" style="padding-left:${6 + n.depth * 16}px${stk[k] !== undefined ? ';left:' + stk[k] + 'px' : ''}" title="${esc(t.wbs)} · ${esc(t.n)}">${tg}<span class="st ${st}" title="${ST[st]}"></span><span class="nmt${t.sum ? ' sumt' : ''}">${esc(t.n)}</span>${bd}</td>`;
+    }
+    case 'rel': return `<td class="rel">${n.depth ? relTxt(n.rel) : '—'}</td>`;
+    case 'lbS': return `<td class="d lb">${fmt(t.lbS)}</td>`;
+    case 'lbF': return `<td class="d lb">${fmt(t.lbF)}</td>`;
+    case 's': return dcell('at', t.s, dvS(t));
+    case 'f': return dcell('at', t.f, dv);
+    case 'dv': return `<td class="dv ${dvc}">${dv == null ? '—' : (dv > 0 ? '+' : '') + dv + 'd'}</td>`;
+    case 'pc': return `<td class="pc">${Math.round(t.pc * 100)}%</td>`;
+    case 'ch': return `<td class="ch" title="Sucessoras (total) · término da cadeia">${ch.n ? ch.n + ' · ' + fmtN(ch.f) : '—'}</td>`;
+    case 'gt': return `<td class="g">${ganttCell(t)}</td>`;
+  }
+}
+function row(n, cols, stk, ultimo) {
+  const t = T[n.k], hasK = n.kids.length > 0, dv = dvF(t);
+  const ctx = {t, st: status(t), ch: chain(n.k), dv, dvc: dv == null ? 'z' : dv > 0 ? 'p' : dv < 0 ? 'n' : 'z', hasK, open: hasK && (ACT || S.exp.has(n.key)), stk, ultimo};
   const cls = ['', n.depth === 0 ? 'root' : '', n.ctx ? 'ctx' : '', n.dup ? 'dup' : '', S.sel === n.key ? 'sel' : ''].join(' ');
-  const tg = hasK ? `<span class="tg" data-t="${n.key}">${open ? '▾' : '▸'}</span>` : '<span class="tg none">▸</span>';
-  const bd = n.dup ? `<span class="badge dup" data-f="${n.first}" title="Já listada acima nesta dependência. Clique para ir até lá.">↩ repetida</span>`
-           : hasK ? `<span class="badge" title="Sucessoras diretas">↳ ${n.kids.length}</span>` : '';
-  return `<tr class="${cls}" data-k="${n.key}">
-    <td class="sticky1 d" style="color:var(--mut)">${t.id}</td>
-    <td class="sticky2 nm" style="padding-left:${6 + n.depth*16}px" title="${esc(t.wbs)} · ${esc(t.n)}">${tg}<span class="st ${st}" title="${ST[st]}"></span><span class="nmt${t.sum ? ' sumt' : ''}">${esc(t.n)}</span>${bd}</td>
-    <td class="rel c-rel">${n.depth ? relTxt(n.rel) : '—'}</td>
-    <td class="d lb c-lb">${fmt(t.lbS)}</td><td class="d lb c-lb">${fmt(t.lbF)}</td>
-    ${dcell('at c-at', t.s, dvS(t))}${dcell('at c-at', t.f, dv)}
-    <td class="dv ${dvc}">${dv == null ? '—' : (dv > 0 ? '+' : '') + dv + 'd'}</td>
-    <td class="pc">${Math.round(t.pc*100)}%</td>
-    <td class="ch c-ch" title="Sucessoras (total) · término da cadeia">${ch.n ? ch.n + ' · ' + fmtN(ch.f) : '—'}</td>
-    <td class="g">${ganttCell(t)}</td></tr>`;
+  return `<tr class="${cls}" data-k="${n.key}">${cols.map(k => celula(k, n, ctx)).join('')}</tr>`;
 }
 function render(keepScroll = true) {
   if (S.mob) return renderMob();
   const wrap = $('wrap'), sl = wrap.scrollLeft, stp = wrap.scrollTop;
   computeVisible();
-  const gw = (TMAX - TMIN) * S.ppd + 110;
+  GW = (TMAX - TMIN) * S.ppd + 110;
   let mh = '', yh = '';
-  for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(), x = 0; ; ) {
+  for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(); ; ) {
     const a = Date.UTC(y, m, 1) / 864e5, b = Date.UTC(y, m + 1, 1) / 864e5;
     if (a > TMAX) break;
     const xa = Math.max(a - TMIN, 0) * S.ppd, sobra = (b - TMIN) * S.ppd - xa;     // mês cortado no início da escala não ganha rótulo se não couber
@@ -706,28 +782,33 @@ function render(keepScroll = true) {
     if (m === 0 || a <= TMIN) yh += `<div class="yr" style="left:${xa}px">${y}</div>`;
     if (++m > 11) { m = 0; y++; }
   }
-  const on = g => $('g'+g).checked;
-  $('tb').style.width = (ID_W + NM_W + 76 + 80 + 44 + (on('LB') ? 140 : 0) + (on('AT') ? 140 : 0) + (on('CH') ? 118 : 0) + gw) + 'px';
-  $('tb').className = ['LB','AT','CH'].filter(g => !$('g'+g).checked).map(g => 'hide-' + g.toLowerCase()).concat(S.wrap ? ['wrapnm'] : []).join(' ');
-  $('tb').innerHTML = `<colgroup><col style="width:${ID_W}px"><col style="width:${NM_W}px"><col class="c-rel" style="width:76px"><col class="c-lb" style="width:70px"><col class="c-lb" style="width:70px"><col class="c-at" style="width:70px"><col class="c-at" style="width:70px"><col style="width:80px"><col style="width:44px"><col class="c-ch" style="width:118px"><col style="width:${gw}px"></colgroup>
-  <thead><tr class="h1"><th class="sticky1" rowspan="2" data-sk="id">ID${seta('id')}<span class="hq" data-h="id">?</span></th><th class="sticky2" rowspan="2" style="text-align:left" data-sk="nm">Tarefa · cascata de sucessoras${seta('nm')}<span class="hq" data-h="nm">?</span><span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span></th><th class="c-rel" rowspan="2">Relação<span class="hq" data-h="rel">?</span></th>
-   <th class="gLB c-lb" colspan="2">Linha de base<span class="hq" data-h="lb">?</span></th><th class="gAT c-at" colspan="2">Atual (cronograma)<span class="hq" data-h="at">?</span></th>
-   <th rowspan="2" data-sk="dv">Desvio<br>término${seta('dv')}<span class="hq" data-h="dv">?</span></th><th rowspan="2" data-sk="pc">%${seta('pc')}<span class="hq" data-h="pc">?</span></th><th class="c-ch" rowspan="2" data-sk="ch">Cadeia<br>suc. · fim${seta('ch')}<span class="hq" data-h="ch">?</span></th><th rowspan="2" style="padding:0;position:sticky"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:6px;top:6px">?</span></th></tr>
-   <tr class="h2"><th class="gLB c-lb" data-sk="lbS">Início${seta('lbS')}</th><th class="gLB c-lb" data-sk="lbF">Término${seta('lbF')}</th><th class="gAT c-at" data-sk="s">Início${seta('s')}</th><th class="gAT c-at" data-sk="f">Término${seta('f')}</th></tr></thead>
-  <tbody>${vis.length ? vis.map(row).join('') : '<tr><td colspan="11" class="empty">Nenhuma tarefa para os filtros atuais.</td></tr>'}</tbody>`;
-  const gth = $('tb').querySelector('thead tr.h1 th:last-child'), hh = $('tb').querySelector('thead').offsetHeight;
-  const ov = $('ov'); ov.style.left = gth.offsetLeft + 'px'; ov.style.top = hh + 'px';
-  ov.style.width = gw + 'px'; ov.style.height = ($('tb').offsetHeight - hh) + 'px';
-  let o = '';
-  for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(); ; ) {
-    const a = Date.UTC(y, m, 1) / 864e5; if (a > TMAX) break;
-    if (a > TMIN) o += `<div class="ml${m === 0 ? ' y' : ''}" style="left:${(a - TMIN) * S.ppd}px"></div>`;
-    if (++m > 11) { m = 0; y++; }
+  const cols = colsVis(), stk = {}; let left = 0, ultimo = null;
+  for (const k of cols) { if (k === 'id' || k === 'nm') { stk[k] = left; left += colW(k); ultimo = k; } else break; }       // colunas fixas à esquerda: ID e Tarefa, enquanto forem as primeiras
+  STK_W = left;
+  const th = k => {
+    const c = COLS[k], sticky = stk[k] !== undefined, cx = c.fixa ? '' : '<span class="cx" title="Ocultar esta coluna">✕</span>';
+    if (k === 'gt') return `<th data-c="gt" draggable="true" class="gt" style="padding:0"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:22px;top:6px">?</span>${cx}</th>`;
+    return `<th data-c="${k}" draggable="true" class="${(c.th || '') + (sticky ? ' stk' + (ultimo === k ? ' stl' : '') : '')}"${sticky ? ` style="left:${stk[k]}px"` : ''}${c.sk ? ` data-sk="${c.sk}"` : ''}>${k === 'nm' ? '<span style="float:left">' + c.t + '</span>' : c.t}${c.sk ? seta(c.sk) : ''}<span class="hq" data-h="${c.h}">?</span>${cx}${k === 'nm' ? '<span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span>' : ''}</th>`;
+  };
+  $('tb').style.width = cols.reduce((a, k) => a + colW(k), 0) + 'px';
+  $('tb').className = S.wrap ? 'wrapnm' : '';
+  $('tb').innerHTML = `<colgroup>${cols.map(k => `<col style="width:${colW(k)}px">`).join('')}</colgroup>
+  <thead><tr class="h1">${cols.map(th).join('')}</tr></thead>
+  <tbody>${vis.length ? vis.map(n => row(n, cols, stk, ultimo)).join('') : `<tr><td colspan="${cols.length}" class="empty">Nenhuma tarefa para os filtros atuais.</td></tr>`}</tbody>`;
+  const gth = $('tb').querySelector('th[data-c=gt]'), hh = $('tb').querySelector('thead').offsetHeight, ov = $('ov');
+  ov.style.display = gth ? '' : 'none';
+  if (gth) {
+    ov.style.left = gth.offsetLeft + 'px'; ov.style.top = hh + 'px'; ov.style.width = GW + 'px'; ov.style.height = ($('tb').offsetHeight - hh) + 'px';
+    let o = '';
+    for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(); ; ) {
+      const a = Date.UTC(y, m, 1) / 864e5; if (a > TMAX) break;
+      if (a > TMIN) o += `<div class="ml${m === 0 ? ' y' : ''}" style="left:${(a - TMIN) * S.ppd}px"></div>`;
+      if (++m > 11) { m = 0; y++; }
+    }
+    ov.innerHTML = o + `<div class="cut" style="left:${(S.cut - TMIN) * S.ppd}px"><span>Status ${fmtN(S.cut)}</span></div>`;
   }
-  o += `<div class="cut" style="left:${(S.cut - TMIN) * S.ppd}px"><span>Status ${fmtN(S.cut)}</span></div>`;
-  ov.innerHTML = o;
   if (keepScroll) { wrap.scrollLeft = sl; wrap.scrollTop = stp; }
-  $('wrap').style.setProperty('--idw', ID_W + 'px'); $('nmw').value = NM_W;
+  $('nmw').value = NM_W; painelCols();
 }
 
 /* ---------- celular: cascata em cartões ---------- */
@@ -898,7 +979,7 @@ function vazio() {
   $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = true;
   $('vzh').innerHTML = S.mob ? 'Escolha o <b>.mpp</b> (ou <b>.xml</b>) do MS Project que está no aparelho, ou abra um <b>HTML salvo</b> pelo computador (botão <b>Salvar HTML</b>).' : 'Aceita o arquivo <b>.mpp</b> do MS Project (2010 ou mais novo) ou o <b>.xml</b> exportado por ele. A leitura é feita aqui mesmo, no navegador; nada é enviado a lugar nenhum.';
 }
-['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); document.body.classList.add('dragging'); }));
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (!colArrasto) document.body.classList.add('dragging'); }));
 document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dragging'); });
 document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dragging'); if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
 function salvarHtml() {
@@ -1105,7 +1186,7 @@ function loadData(d) {
 
   const refresh = () => render();
   $('q').oninput = $('fs').onchange = $('fd').onchange = $('fr').onchange = () => render();
-  ['gLB','gAT','gCH'].forEach(i => $(i).onchange = () => render());
+  $('crst').onclick = restaurarCols;
   $('sk').onchange = () => { S.sk = $('sk').value; syncSort(); build(); render(); };
   $('sd').onclick = () => { S.sd = -S.sd; syncSort(); build(); render(); };
   syncSort();
@@ -1114,7 +1195,7 @@ function loadData(d) {
   $('lv').onchange = () => { const L = +$('lv').value; S.exp.clear(); nodes.forEach(n => { if (n.kids.length && n.depth < L) S.exp.add(n.key); }); render(); };
   $('cut').onchange = () => { if ($('cut').value) { S.cut = dn($('cut').value); build(); refresh(); } };
   $('bst').onclick = () => { if (D && D.dataStatus) { S.cut = dn(D.dataStatus); $('cut').value = D.dataStatus; build(); refresh(); } };
-  $('bhj').onclick = () => { const w = $('wrap'); const sw = ID_W + NM_W; w.scrollLeft = $('ov').offsetLeft + (S.cut - TMIN) * S.ppd - (sw + (w.clientWidth - sw) / 2); };
+  $('bhj').onclick = () => { const w = $('wrap'), sw = STK_W; w.scrollLeft = $('ov').offsetLeft + (S.cut - TMIN) * S.ppd - (sw + (w.clientWidth - sw) / 2); };
   $('bcsv').onclick = csv;
   MQ.addEventListener('change', aplicarModo);
   addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
@@ -1130,6 +1211,10 @@ function loadData(d) {
     else { $('lv').value = b.dataset.x === 'exp' ? '99' : '0'; $('lv').onchange(); return; }
     render();
   };
+  $('cbar').onclick = e => {
+    const m = e.target.closest('[data-m]'), x = e.target.closest('[data-x]'), sh = e.target.closest('[data-show]');
+    if (m) moverCol(m.closest('[data-c]').dataset.c, +m.dataset.m); else if (x) ocultarCol(x.dataset.x); else if (sh) mostrarCol(sh.dataset.show);
+  };
   $('mv').onclick = e => {
     const tg = e.target.closest('.ctg[data-t]'), fb = e.target.closest('[data-f]'), cd = e.target.closest('.cd[data-k]');
     if (tg) { const k = tg.dataset.t; S.exp.has(k) ? S.exp.delete(k) : S.exp.add(k); render(); return; }
@@ -1141,6 +1226,7 @@ function loadData(d) {
   $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
   $('bsave').onclick = salvarHtml; $('bpdf').onclick = abrirPdf;
   $('tb').onclick = e => {
+    const cx = e.target.closest('.cx'); if (cx) { ocultarCol(cx.closest('th').dataset.c); return; }
     const th = e.target.closest('th[data-sk]');
     if (th && !e.target.closest('.hq,.rz')) { setSort(th.dataset.sk); return; }
     const tg = e.target.closest('.tg[data-t]'), fb = e.target.closest('[data-f]'), tr = e.target.closest('tr[data-k]');
