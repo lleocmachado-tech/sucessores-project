@@ -339,7 +339,6 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span><i class="sw" style="background:var(--late)"></i>Atrasada</span>
   <span><i class="sw" style="background:var(--fut)"></i>Futura</span>
   <span><i class="sw" style="background:var(--lb);height:4px"></i>Linha de base</span>
-  <span><i class="sw" style="background:var(--real);height:5px"></i>Real</span>
   <span><i class="dm"></i>Tarefa de 1 dia (marco)</span>
   <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
   <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
@@ -681,7 +680,6 @@ function ganttCell(t) {
   const d = t.d, st = status(t), x = v => (v - TMIN) * S.ppd, w = (a, b) => Math.max((b - a + 1) * S.ppd, 3);
   let h = '';
   if (d.lbS != null) h += `<div class="bar bl" style="left:${x(d.lbS)}px;width:${w(d.lbS, d.lbF)}px"></div>`;
-  if (d.asS != null) { const e = d.asF ?? Math.max(Math.min(S.cut, d.f), d.asS); h += `<div class="bar ac" style="left:${x(d.asS)}px;width:${w(d.asS, e)}px"></div>`; }
   if (d.s === d.f) h += `<div class="ms ${st}" style="left:${x(d.s) + S.ppd/2}px"></div>`;
   else h += `<div class="bar cu ${st}" style="left:${x(d.s)}px;width:${w(d.s, d.f)}px"><div class="pg" style="width:${Math.min(t.pc,1)*100}%"></div></div>`;
   return h;
@@ -900,7 +898,6 @@ function openDrawer(key) {
     <h2>${t.id} · ${esc(t.n)}</h2><div style="color:var(--mut);font-size:11.5px">EDT ${esc(t.wbs)}</div><div><span class="st ${st}"></span>${ST[st]} · ${Math.round(t.pc*100)}% concluída${t.sum ? ' · tarefa resumo' : ''}</div>
     <h3>Datas</h3><table><tr><th></th><th>Início</th><th>Término</th><th>Dias corridos</th></tr>
       <tr><td>Linha de base</td><td>${fmt(t.lbS)}</td><td>${fmt(t.lbF)}</td><td>${dur(t.d.lbS, t.d.lbF)}</td></tr>
-      <tr><td>Real</td><td>${fmt(t.asS)}</td><td>${fmt(t.asF)}</td><td>${dur(t.d.asS, t.d.asF)}</td></tr>
       <tr><td><b>Atual</b></td><td><b>${fmt(t.s)}</b></td><td><b>${fmt(t.f)}</b></td><td>${dur(t.d.s, t.d.f)}</td></tr>
       <tr><td>Desvio vs LB</td><td class="dv ${dS > 0 ? 'p' : dS < 0 ? 'n' : 'z'}">${sg(dS)}</td><td class="dv ${dF > 0 ? 'p' : dF < 0 ? 'n' : 'z'}">${sg(dF)}</td><td></td></tr></table>
     <h3>Impacto na rede</h3><div>${ch.n ? `<b>${ch.n}</b> ${ch.n > 1 ? 'sucessoras' : 'sucessora'} no total · cadeia termina em <b>${fmtN(ch.f)}</b>${ch.lf != null ? ` (LB ${fmtN(ch.lf)}, ${sg(ch.f - ch.lf)})` : ''}` : 'Sem sucessoras (fim de cadeia).'}</div>
@@ -1171,7 +1168,7 @@ const TIPS = {
   dv: '<b>Desvio de término</b><br>Término atual − Término da linha de base, em dias corridos.<hr><b style="color:#ff9b8f">+Nd</b> = atrasada · <b>−Nd</b> = adiantada · 0d = no prazo.',
   pc: '<b>% concluído</b><br>Percentual de conclusão registrado na tarefa no MS Project.',
   ch: '<b>Cadeia (suc. · fim)</b><br>Quantas sucessoras a tarefa tem no total (diretas e indiretas, até a última) · e a data do <b>maior término atual</b> entre a tarefa e todas elas — ou seja, até quando essa cadeia se estende. É o impacto se a tarefa atrasar.',
-  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Barra azul-escura fina em cima = <b>real</b> (do início real ao término real, ou até a data de status se em andamento).<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Passe o mouse sobre as barras de uma linha para ver as datas.'
+  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Passe o mouse sobre as barras de uma linha para ver as datas.'
 };
 (function () {
   const tip = $('tip');
