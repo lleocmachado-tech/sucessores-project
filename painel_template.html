@@ -828,7 +828,7 @@ function vazio() {
 ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (!colArrasto) document.body.classList.add('dragging'); }));
 document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dragging'); });
 document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dragging'); if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
-const dadosJson = () => JSON.stringify({...D, pasta: +$('fp').value || D.pasta}, (k, v) => (k === 'k' || (k === 'd' && v && typeof v === 'object' && !Array.isArray(v) && 'lbS' in v)) ? undefined : v).replace(/</g, '\\u003c');
+const dadosJson = () => JSON.stringify({...D, pasta: +$('fp').value || D.pasta, visao: visaoAtual()}, (k, v) => (k === 'k' || (k === 'd' && v && typeof v === 'object' && !Array.isArray(v) && 'lbS' in v)) ? undefined : v).replace(/</g, '\\u003c');
 function salvarHtml() {
   const c = document.documentElement.cloneNode(true);
   c.querySelector('#dados').textContent = 'window.__D=' + dadosJson() + ';';
@@ -907,7 +907,7 @@ async function atualizarOnline() {                                           // 
   const ti = await buscarOnline(IDXF);
   if (ti && ti !== ENVI) { try { IDX = await decifrar(ti, PW); ENVI = ti; listaCron(); } catch (e) {} }
   const t = CUR && await buscarOnline(cronF(CUR)); if (!t || t === ENV) return;
-  try { const d = await decifrar(t, PW); ENV = t; loadData(d); } catch (e) {}
+  try { const d = await decifrar(t, PW); ENV = t; const v = visaoAtual(); loadData(d, true); aplicarVisao(v); } catch (e) {}   // mantém o que a pessoa já ajustou
 }
 const GH = 'https://api.github.com/repos/' + REPO + '/contents/';
 const ghH = tk => ({Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json'});
@@ -1201,7 +1201,25 @@ function gravarTitulo() {
   else { D.titulo = v; try { localStorage.setItem(chave, v); } catch (e) {} }
   mostrarTitulo();
 }
-function loadData(d) {
+/* ---------- visão salva: filtros/ordem/colunas viajam com o cronograma publicado ---------- */
+const visaoAtual = () => ({fp: $('fp').value, fm: $('fm').value, fr: $('fr').value, fs: $('fs').value, fd: $('fd').checked, q: $('q').value.trim(), sk: S.sk, sd: S.sd,
+  dd: S.dedupe, lv: $('lv').value, ppd: S.ppd, nm: NM_W, wr: S.wrap, ord: S.ord, hid: [...S.hid], cut: S.cut !== dn(D.dataStatus) ? new Date(S.cut * 864e5).toISOString().slice(0, 10) : undefined});
+function expandirNivel() { const L = +$('lv').value; S.exp.clear(); nodes.forEach(n => { if (n.kids.length && n.depth < L) S.exp.add(n.key); }); }
+function aplicarVisao(v) {
+  if (KIDS[v.fp]) { $('fp').value = v.fp; $('fp').onchange(); }
+  if (['d', 'l', 'e'].includes(v.fm)) { $('fm').value = v.fm; setRoots(); }
+  $('fr').value = v.fr || ''; $('fs').value = v.fs || ''; $('fd').checked = !!v.fd; $('q').value = $('qm').value = v.q || '';
+  if (COLS_ORD_OK(v.sk)) S.sk = v.sk; S.sd = v.sd === -1 ? -1 : 1; syncSort();
+  S.dedupe = $('dd').checked = v.dd !== false;
+  if (v.ppd >= 0.5 && v.ppd <= 6) { S.ppd = v.ppd; $('zm').value = v.ppd; }
+  if (v.nm) { NM_W = Math.min(1100, Math.max(260, +v.nm)); $('nmw').value = NM_W; }
+  S.wrap = $('nmwrap').checked = !!v.wr;
+  if (Array.isArray(v.ord)) { S.ord = v.ord.filter(k => COLS[k]); COL_PADRAO.forEach(k => { if (!S.ord.includes(k)) S.ord.push(k); }); S.hid = new Set((v.hid || []).filter(k => COLS[k] && !COLS[k].fixa)); }
+  if (v.cut) { S.cut = dn(v.cut); $('cut').value = v.cut; }
+  build(); $('lv').value = v.lv || '0'; expandirNivel(); render();
+}
+const COLS_ORD_OK = k => Object.keys(NOMES_ORD).includes(k);
+function loadData(d, manter) {
   const old = T && $('fp').value && T[$('fp').value] ? T[$('fp').value] : null;
   D = d; T = D.tasks; prep(); mkKids(); chainMemo = {};
   S.cut = dn(D.dataStatus) ?? S.cut; $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
@@ -1217,6 +1235,7 @@ function loadData(d) {
   const same = old && Object.keys(T).find(k => KIDS[k] && T[k].n === old.n && T[k].wbs === old.wbs);
   $('fp').value = same || String(D.pasta);
   $('fp').onchange();
+  if (D.visao && !manter) aplicarVisao(D.visao);                              // visão padrão salva na publicação
 }
 
 (function init() {
@@ -1245,7 +1264,7 @@ function loadData(d) {
   syncSort();
   $('dd').onchange = () => { S.dedupe = $('dd').checked; S.exp.clear(); S.sel = null; build(); render(); };
   $('zm').oninput = () => { S.ppd = +$('zm').value; render(); };
-  $('lv').onchange = () => { const L = +$('lv').value; S.exp.clear(); nodes.forEach(n => { if (n.kids.length && n.depth < L) S.exp.add(n.key); }); render(); };
+  $('lv').onchange = () => { expandirNivel(); render(); };
   $('cut').onchange = () => { if ($('cut').value) { S.cut = dn($('cut').value); build(); refresh(); } };
   $('bst').onclick = () => { if (D && D.dataStatus) { S.cut = dn(D.dataStatus); $('cut').value = D.dataStatus; build(); refresh(); } };
   $('bhj').onclick = () => { const w = $('wrap'), sw = STK_W; w.scrollLeft = $('ov').offsetLeft + (S.cut - TMIN) * S.ppd - (sw + (w.clientWidth - sw) / 2); };

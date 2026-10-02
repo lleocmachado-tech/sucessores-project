@@ -17,6 +17,7 @@ O leitor foi validado campo a campo contra o mpxj em vários `.mpp` (datas, linh
 - Página: `index.html` (cópia do painel em branco, gerada por `python gerar_painel.py`). Os dados ficam em `dados/`: um `<nome>.json` por cronograma mais `dados/indice.json` (lista). Tudo **cifrado** (AES-GCM, chave derivada da senha única); sem a senha os arquivos são ilegíveis.
 - Visitante: abre o link, digita a senha e escolhe o cronograma no seletor do cabeçalho. Link direto: `<link>/#c=<nome>`. A página confere se há versão nova ao voltar para a aba e a cada 5 min.
 - Admin: abra `<link>/#admin`, carregue o `.mpp` e clique em **Publicar online** (escolha atualizar um já publicado, que mantém o link, ou criar novo). **Renomear** muda só o nome na lista (o link não muda). **Excluir do online** apaga o cronograma selecionado. Pede token do GitHub fine-grained, só este repo, *Contents: Read and write*; fica no navegador.
+- Visão padrão: ao publicar, os filtros, ordenação, colunas, zoom e nível de expansão que estão na tela viram a configuração inicial de quem abrir o link.
 - O Pages atualiza em ~1 min após cada publicação, sem deploy manual.
 - Ativar uma vez: GitHub → Settings → Pages → Branch `main` / pasta `/ (root)`.
 - Formato antigo (`dados.json` único na raiz) ainda abre se não houver `dados/indice.json`.
