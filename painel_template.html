@@ -498,13 +498,10 @@ function dcell(cls, v, cmp) {
 function ganttCell(t) {
   const d = t.d, st = status(t), x = v => (v - TMIN) * S.ppd, w = (a, b) => Math.max((b - a + 1) * S.ppd, 3);
   let h = '';
-  if (d.lbS != null) h += `<div class="bar bl" style="left:${x(d.lbS)}px;width:${w(d.lbS, d.lbF)}px" title="Linha de base: ${fmt(t.lbS)} → ${fmt(t.lbF)}"></div>`;
-  if (d.asS != null) { const e = d.asF ?? Math.max(Math.min(S.cut, d.f), d.asS); h += `<div class="bar ac" style="left:${x(d.asS)}px;width:${w(d.asS, e)}px" title="Real: ${fmt(t.asS)} → ${t.asF ? fmt(t.asF) : 'em andamento'}"></div>`; }
-  const tip = `${esc(t.n)} — Atual: ${fmt(t.s)} → ${fmt(t.f)} · ${Math.round(t.pc*100)}%`;
-  let endX;
-  if (d.s === d.f) { h += `<div class="ms ${st}" style="left:${x(d.s) + S.ppd/2}px" title="${tip}"></div>`; endX = x(d.s) + 12; }
-  else { const bw = w(d.s, d.f); h += `<div class="bar cu ${st}" style="left:${x(d.s)}px;width:${bw}px" title="${tip}"><div class="pg" style="width:${Math.min(t.pc,1)*100}%"></div></div>`; endX = x(d.s) + bw + 4; }
-  h += `<div class="lab" style="left:${endX}px">${fmt(t.s)}${d.s !== d.f ? ' – ' + fmt(t.f) : ''}</div>`;
+  if (d.lbS != null) h += `<div class="bar bl" style="left:${x(d.lbS)}px;width:${w(d.lbS, d.lbF)}px"></div>`;
+  if (d.asS != null) { const e = d.asF ?? Math.max(Math.min(S.cut, d.f), d.asS); h += `<div class="bar ac" style="left:${x(d.asS)}px;width:${w(d.asS, e)}px"></div>`; }
+  if (d.s === d.f) h += `<div class="ms ${st}" style="left:${x(d.s) + S.ppd/2}px"></div>`;
+  else h += `<div class="bar cu ${st}" style="left:${x(d.s)}px;width:${w(d.s, d.f)}px"><div class="pg" style="width:${Math.min(t.pc,1)*100}%"></div></div>`;
   return h;
 }
 /* ---------- colunas: ocultar, reexibir e reordenar ---------- */
@@ -957,6 +954,31 @@ async function gerarPdf() {
   w.document.write(html); w.document.close(); w.onload = () => w.print();
 }
 
+/* ---------- datas da linha do tempo: aparecem ao passar o mouse sobre as barras ---------- */
+function dicaBarras(e) {
+  const td = e.target.closest && e.target.closest('td.g'), tip = $('tip');
+  let ok = false;
+  if (td) {
+    const bs = [...td.querySelectorAll('.bar,.ms')];
+    if (bs.length) {
+      const rs = bs.map(b => b.getBoundingClientRect()), l = Math.min(...rs.map(r => r.left)) - 3, r = Math.max(...rs.map(r => r.right)) + 3, rt = td.getBoundingClientRect();
+      ok = e.clientX >= l && e.clientX <= r && e.clientY >= rt.top && e.clientY <= rt.bottom;
+    }
+  }
+  if (!ok) { if (tip.dataset.g) { tip.style.display = 'none'; tip.dataset.g = ''; } return; }
+  const n = byKey[td.parentElement.dataset.k]; if (!n) return;
+  if (tip.dataset.g !== n.key) {
+    const t = T[n.k], dv = dvF(t), sg = v => v == null ? '—' : (v > 0 ? '+' : '') + v + 'd';
+    tip.innerHTML = `<b>${esc(t.n)}</b><hr><b>Atual</b> ${fmt(t.s)} → ${fmt(t.f)} · ${Math.round(t.pc * 100)}%<br><b>Linha de base</b> ${fmt(t.lbS)} → ${fmt(t.lbF)}<br><b>Real</b> ${t.asS ? fmt(t.asS) + ' → ' + (t.asF ? fmt(t.asF) : 'em andamento') : '—'}<br><b>Desvio de término</b> ${sg(dv)}`;
+    tip.dataset.g = n.key; tip.style.display = 'block';
+  }
+  tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8)) + 'px';
+  tip.style.top = Math.min(e.clientY + 16, innerHeight - tip.offsetHeight - 8) + 'px';
+}
+document.addEventListener('mousemove', dicaBarras);
+document.addEventListener('mouseleave', () => { $('tip').dataset.g = ''; }, true);
+$('wrap').addEventListener('scroll', () => { if ($('tip').dataset.g) { $('tip').style.display = 'none'; $('tip').dataset.g = ''; } });
+
 /* ---------- ajuda das colunas ---------- */
 const TIPS = {
   id: '<b>ID</b><br>Número da linha da tarefa no MS Project (coluna "ID" do cronograma).',
@@ -967,7 +989,7 @@ const TIPS = {
   dv: '<b>Desvio de término</b><br>Término atual − Término da linha de base, em dias corridos.<hr><b style="color:#ff9b8f">+Nd</b> = atrasada · <b>−Nd</b> = adiantada · 0d = no prazo.',
   pc: '<b>% concluído</b><br>Percentual de conclusão registrado na tarefa no MS Project.',
   ch: '<b>Cadeia (suc. · fim)</b><br>Quantas sucessoras a tarefa tem no total (diretas e indiretas, até a última) · e a data do <b>maior término atual</b> entre a tarefa e todas elas — ou seja, até quando essa cadeia se estende. É o impacto se a tarefa atrasar.',
-  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Barra azul-escura fina em cima = <b>real</b> (do início real ao término real, ou até a data de status se em andamento).<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Texto ao lado da barra = datas atuais (início – término).'
+  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Barra azul-escura fina em cima = <b>real</b> (do início real ao término real, ou até a data de status se em andamento).<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Passe o mouse sobre as barras de uma linha para ver as datas.'
 };
 (function () {
   const tip = $('tip');
