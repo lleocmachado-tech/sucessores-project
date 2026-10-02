@@ -642,7 +642,7 @@ function render(keepScroll = true) {
   const th = k => {
     const c = COLS[k], sticky = stk[k] !== undefined, cx = c.fixa ? '' : '<span class="cx" title="Ocultar esta coluna">✕</span>';
     if (k === 'gt') return `<th data-c="gt" class="gt" style="padding:0"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:22px;top:6px">?</span>${cx}</th>`;
-    return `<th data-c="${k}" class="${(c.th || '') + (sticky ? ' stk' + (ultimo === k ? ' stl' : '') : '')}"${sticky ? ` style="left:${stk[k]}px"` : ''}${c.sk ? ` data-sk="${c.sk}"` : ''}>${k === 'nm' ? '<span style="float:left">' + c.t + '</span>' : c.t}${c.sk ? seta(c.sk) : ''}<span class="hq" data-h="${c.h}">?</span>${cx}${k === 'nm' ? '<span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span>' : ''}</th>`;
+    return `<th data-c="${k}" class="${(c.th || '') + (sticky ? ' stk' + (ultimo === k ? ' stl' : '') : '')}"${sticky ? ` style="left:${stk[k]}px"` : ''}${c.sk ? ` data-sk="${c.sk}"` : ''}>${k === 'nm' ? '<span style="float:left">' + c.t + '</span>' : c.t}${c.sk ? seta(c.sk) : ''}${k === 'id' ? '' : `<span class="hq" data-h="${c.h}">?</span>`}${cx}${k === 'nm' ? '<span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span>' : ''}</th>`;
   };
   $('tb').style.width = cols.reduce((a, k) => a + colW(k), 0) + 'px';
   $('tb').className = S.wrap ? 'wrapnm' : '';
