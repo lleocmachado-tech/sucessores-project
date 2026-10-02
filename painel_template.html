@@ -859,6 +859,10 @@ async function decifrar(env, pw) {
 }
 async function buscarOnline(arq) {
   if (!/^https?:$/.test(location.protocol)) return null;                    // aberto como arquivo: só modo local
+  if (ADM) {                                                                // admin com token: lê direto do GitHub (o Pages demora ~1 min para refletir)
+    let tk = ''; try { tk = localStorage.getItem('combio_gh') || ''; } catch (e) {}
+    if (tk) try { const g = await ghGet(tk, arq); if (!g) return null; if (g.txt) { JSON.parse(g.txt); return g.txt; } } catch (e) {}
+  }
   try { const r = await fetch(arq + '?t=' + Date.now(), {cache: 'no-store'}); if (!r.ok) return null; const t = await r.text(); JSON.parse(t); return t; } catch (e) { return null; }
 }
 const slug = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
