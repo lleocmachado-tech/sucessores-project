@@ -38,6 +38,13 @@ header .right{margin-left:20px;text-align:right;font-size:11.5px;opacity:.85}
 .tools label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mut);white-space:nowrap}
 .tools input[type=text],.tools input[type=date],.tools select{font:inherit;padding:4px 7px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
 .tools input[type=text]{width:210px}
+#gate{display:none;position:fixed;inset:0;z-index:100;background:var(--g4);align-items:center;justify-content:center}
+body.gating #gate{display:flex}
+#gform{background:#fff;border:1px solid var(--line);border-top:4px solid var(--g1);border-radius:8px;padding:24px 28px;width:min(320px,90vw);display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+#gform h2{margin:0;color:var(--g1);font-size:17px}#gform p{margin:0;color:var(--mut);font-size:13px}
+#gform input{font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:5px}
+#gerr{color:#b3261e;font-size:12.5px;min-height:16px}
+#bpub{display:none}body.adm #bpub{display:inline-block}
 button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
 button:hover{background:var(--g3)}
 button.pri{background:var(--g1);color:#fff;border-color:var(--g1)}button.pri:hover{background:#0a7a3a}
@@ -290,6 +297,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div></div>
   <div class="acts">
     <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
+    <button id="bpub" title="Publicar este cronograma no painel online (GitHub Pages)">Publicar online</button>
     <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
     <button id="bpdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">Relatório PDF</button>
   </div>
@@ -369,6 +377,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
 <div id="tip"></div>
 <div id="pdfm"></div>
 <div id="ldg"></div>
+<div id="gate"><form id="gform"><h2>Painel de Sucessoras</h2><p>Acesso restrito. Digite a senha.</p><input id="gpw" type="password" autocomplete="current-password" placeholder="Senha"><button class="pri">Entrar</button><div id="gerr"></div></form></div>
 </main>
 
 <script id="dados">window.__D=/*__DATA__*/null;</script>
@@ -794,19 +803,79 @@ async function lerArquivo(f) {
 const trocarArquivo = () => $('fin').click();
 function vazio() {
   document.body.classList.add('vazio'); $('ttl').removeAttribute('contenteditable'); $('ttl').textContent = 'Painel de Sucessoras'; $('sub').textContent = 'Nenhum cronograma carregado'; $('gen').innerHTML = '';
-  $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = true;
+  $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = true;
   $('vzh').innerHTML = S.mob ? 'Escolha o <b>.mpp</b> (ou <b>.xml</b>) do MS Project que está no aparelho, ou abra um <b>HTML salvo</b> pelo computador (botão <b>Salvar HTML</b>).' : 'Aceita o arquivo <b>.mpp</b> do MS Project (2010 ou mais novo) ou o <b>.xml</b> exportado por ele. A leitura é feita aqui mesmo, no navegador; nada é enviado a lugar nenhum.';
 }
 ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (!colArrasto) document.body.classList.add('dragging'); }));
 document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dragging'); });
 document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dragging'); if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
+const dadosJson = () => JSON.stringify({...D, pasta: +$('fp').value || D.pasta}, (k, v) => (k === 'k' || (k === 'd' && v && typeof v === 'object' && !Array.isArray(v) && 'lbS' in v)) ? undefined : v).replace(/</g, '\\u003c');
 function salvarHtml() {
   const c = document.documentElement.cloneNode(true);
-  const dados = JSON.stringify({...D, pasta: +$('fp').value || D.pasta}, (k, v) => (k === 'k' || (k === 'd' && v && typeof v === 'object' && !Array.isArray(v) && 'lbS' in v)) ? undefined : v).replace(/</g, '\\u003c');
-  c.querySelector('#dados').textContent = 'window.__D=' + dados + ';';
+  c.querySelector('#dados').textContent = 'window.__D=' + dadosJson() + ';';
   ['tb', 'ov', 'dr', 'tip', 'pdfm', 'ldg', 'fp', 'fr'].forEach(id => { const e = c.querySelector('#' + id); e.innerHTML = ''; e.removeAttribute('style'); e.className = ''; });
   const nome = 'Painel_Combio_' + D.arquivo.replace(/\.[^.]+$/, '').replace(/[^\w.-]+/g, '_') + '_' + stamp() + '.html';
   download(new Blob(['<!DOCTYPE html>\n' + c.outerHTML], {type: 'text/html;charset=utf-8'}), nome);
+}
+
+/* ---------- painel online (GitHub Pages): dados.json cifrado com a senha ---------- */
+const REPO = 'lleocmachado-tech/sucessores-project', ARQ = 'dados.json';
+let ENV = null, PW = null;                                                   // ENV = texto do dados.json em uso
+const u8b64 = u => { let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode(...u.subarray(i, i + 8192)); return btoa(s); };
+const b64u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const gzip = async (u, dir) => new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new (dir ? CompressionStream : DecompressionStream)('gzip'))).arrayBuffer());
+async function chaveAes(pw, salt) {
+  const m = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256'}, m, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+}
+async function cifrar(txt, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, await chaveAes(pw, salt), await gzip(new TextEncoder().encode(txt), true)));
+  return JSON.stringify({v: 1, salt: u8b64(salt), iv: u8b64(iv), ct: u8b64(ct)});
+}
+async function decifrar(env, pw) {
+  const e = JSON.parse(env), pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: b64u8(e.iv)}, await chaveAes(pw, b64u8(e.salt)), b64u8(e.ct));
+  return JSON.parse(new TextDecoder().decode(await gzip(new Uint8Array(pt), false)));
+}
+async function buscarOnline() {
+  if (!/^https?:$/.test(location.protocol)) return null;                    // aberto como arquivo: só modo local
+  try { const r = await fetch(ARQ + '?t=' + Date.now(), {cache: 'no-store'}); if (!r.ok) return null; const t = await r.text(); JSON.parse(t); return t; } catch (e) { return null; }
+}
+async function destravar(pw) {
+  try { const d = await decifrar(ENV, pw); PW = pw; try { localStorage.setItem('combio_pw', pw); } catch (e) {} document.body.classList.remove('gating'); loadData(d); return true; }
+  catch (e) { return false; }
+}
+async function abrirOnline() {
+  busy('Carregando cronograma …'); ENV = await buscarOnline(); busy('');
+  if (!ENV) return;
+  let pw = ''; try { pw = localStorage.getItem('combio_pw') || ''; } catch (e) {}
+  if (pw && await destravar(pw)) return;
+  document.body.classList.add('gating'); $('gpw').focus();
+}
+async function atualizarOnline() {                                           // visitante: recarrega se publicaram versão nova
+  if (!ENV || !PW || document.hidden || document.body.classList.contains('adm')) return;
+  const t = await buscarOnline(); if (!t || t === ENV) return;
+  try { const d = await decifrar(t, PW); ENV = t; loadData(d); } catch (e) {}
+}
+async function publicar() {
+  let tk = ''; try { tk = localStorage.getItem('combio_gh') || ''; } catch (e) {}
+  if (!tk) tk = (prompt('Cole o token do GitHub (fine-grained, só este repositório, permissão Contents: Read and write). Fica guardado só neste navegador.') || '').trim();
+  const pw = PW || prompt('Senha do painel (a que os visitantes vão digitar):');
+  if (!tk || !pw) return;
+  busy('Publicando …'); await new Promise(r => setTimeout(r, 30));
+  try {
+    const H = {Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json'}, u = `https://api.github.com/repos/${REPO}/contents/${ARQ}`;
+    const g = await fetch(u + '?ref=main', {headers: H, cache: 'no-store'});
+    const sha = g.ok ? (await g.json()).sha : undefined;
+    const p = await fetch(u, {method: 'PUT', headers: H, body: JSON.stringify({message: 'chore(dados): atualiza cronograma ' + D.arquivo, content: u8b64(new TextEncoder().encode(await cifrar(dadosJson(), pw))), sha, branch: 'main'})});
+    if (!p.ok) {
+      if (p.status === 401 || p.status === 403 || p.status === 404) try { localStorage.removeItem('combio_gh'); } catch (e) {}
+      throw new Error('GitHub respondeu ' + p.status + ' (' + ((await p.json().catch(() => ({}))).message || 'sem detalhe') + '). Confira o token e tente de novo.');
+    }
+    try { localStorage.setItem('combio_gh', tk); localStorage.setItem('combio_pw', pw); } catch (e) {}
+    PW = pw; alert('Publicado! Quem abrir o painel online vê a nova versão em cerca de 1 minuto.');
+  } catch (e) { alert('Não foi possível publicar.\n' + e.message); }
+  busy('');
 }
 
 /* ---------- relatório PDF ---------- */
@@ -1021,7 +1090,7 @@ function loadData(d) {
   const old = T && $('fp').value && T[$('fp').value] ? T[$('fp').value] : null;
   D = d; T = D.tasks; prep(); mkKids(); chainMemo = {};
   S.cut = dn(D.dataStatus) ?? S.cut; $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
-  document.body.classList.remove('vazio'); $('bfile').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = false;
+  document.body.classList.remove('vazio'); $('bfile').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = false;
   try { if (!D.titulo) D.titulo = localStorage.getItem('combio_tit:' + D.arquivo) || undefined; } catch (e) {}   // título editado volta ao reabrir o mesmo arquivo
   mostrarTitulo();
   $('sub').textContent = `${D.arquivo} · Rev. ${D.revisao}${D.salvoEm ? ' · salvo em ' + fmt(D.salvoEm) : ''}${D.dataStatus ? ' · data de status do cronograma ' + fmt(D.dataStatus) : ''}`;
@@ -1046,7 +1115,10 @@ function loadData(d) {
     else if (e.key === 'Escape') { mostrarTitulo(); $('ttl').blur(); }          // descarta a edição
   });
   S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob);
-  D ? loadData(D) : vazio();
+  if (location.hash === '#admin') document.body.classList.add('adm');
+  D ? loadData(D) : (vazio(), abrirOnline());
+  $('gform').onsubmit = async e => { e.preventDefault(); if (await destravar($('gpw').value)) $('gerr').textContent = ''; else { $('gerr').textContent = 'Senha incorreta.'; $('gpw').select(); } };
+  document.addEventListener('visibilitychange', atualizarOnline); setInterval(atualizarOnline, 300000);
 
   const refresh = () => render();
   $('q').oninput = $('fs').onchange = $('fd').onchange = $('fr').onchange = () => render();
@@ -1067,7 +1139,7 @@ function loadData(d) {
   addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
   $('bfil').onclick = () => document.body.classList.add('filopen'); $('fx').onclick = $('bk').onclick = fecharFolhas;
   $('bmenu').onclick = () => document.body.classList.toggle('menuopen');
-  ['bfile', 'bsave', 'bpdf'].forEach(i => $(i).addEventListener('click', fecharFolhas));
+  ['bfile', 'bsave', 'bpdf', 'bpub'].forEach(i => $(i).addEventListener('click', fecharFolhas));
   $('qm').oninput = () => { $('q').value = $('qm').value; render(); };
   $('q').addEventListener('input', () => { $('qm').value = $('q').value; });
   $('chips').onclick = e => {
@@ -1090,7 +1162,7 @@ function loadData(d) {
   $('nmw').oninput = () => setNm(+$('nmw').value); $('nmfit').onclick = ajustarNm;
   $('nmwrap').onchange = () => { S.wrap = $('nmwrap').checked; render(); };
   $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
-  $('bsave').onclick = salvarHtml; $('bpdf').onclick = abrirPdf;
+  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('bpdf').onclick = abrirPdf;
   $('tb').onclick = e => {
     const cx = e.target.closest('.cx'); if (cx) { ocultarCol(cx.closest('th').dataset.c); return; }
     const th = e.target.closest('th[data-sk]');
