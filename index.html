@@ -339,7 +339,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span class="grp">Escopo</span>
   <label class="dk">Buscar <input type="text" id="q" placeholder="nome da tarefa ou ID"></label>
   <label>Tarefa principal (EDT) <select id="fp" style="max-width:300px"></select></label>
-  <label><select id="fm"><option value="d">Raízes: filhos diretos</option><option value="l">Raízes: tarefas de detalhe</option></select></label>
+  <label><select id="fm"><option value="d">Raízes: filhos diretos</option><option value="l">Raízes: tarefas de detalhe</option><option value="e">Estrutura EDT: subtarefas</option></select></label>
   <label>Filtrar tarefa <select id="fr" style="max-width:240px"></select></label>
   <label>Status <select id="fs"><option value="">Todos</option><option value="ok">Concluída</option><option value="run">Em andamento</option><option value="late">Atrasada</option><option value="fut">Futura</option></select></label>
   <label><input type="checkbox" id="fd"> Só com desvio</label>
@@ -603,7 +603,7 @@ try { NM_W = Math.min(1100, Math.max(260, +localStorage.getItem('combio_nm') || 
 const prep = () => { for (const k in T) { const t = T[k]; t.k = k; t.d = {lbS:dn(t.lbS), lbF:dn(t.lbF), asS:dn(t.asS), asF:dn(t.asF), s:dn(t.s), f:dn(t.f)}; } };
 prep();
 
-const S = {exp:new Set(), dedupe:true, ppd:1.6, cut:Math.floor(Date.now()/864e5 - new Date().getTimezoneOffset()/1440), sel:null, sk:'s', sd:1, wrap:false};
+const S = {exp:new Set(), est:false, dedupe:true, ppd:1.6, cut:Math.floor(Date.now()/864e5 - new Date().getTimezoneOffset()/1440), sel:null, sk:'s', sd:1, wrap:false};
 const CAP = 30000;
 let ACT = false, nodes = [], byKey = {}, firstOf = {}, rootNodes = [], vis = [], TMIN, TMAX;
 
@@ -626,6 +626,8 @@ function chain(k) {
 }
 const dvF = t => (t.d.f != null && t.d.lbF != null) ? t.d.f - t.d.lbF : null;
 const dvS = t => (t.d.s != null && t.d.lbS != null) ? t.d.s - t.d.lbS : null;
+// filhos de um nó: na estrutura EDT, as subtarefas (resumo -> filhos); fora dela (ou em tarefa de detalhe), as sucessoras
+const filhosDe = (k, est) => (est && S.est && (KIDS[k] || []).length ? KIDS[k].map(c => ({k: c, rel: null, est: true})) : T[k].su.map(r => ({k: String(r[0]), rel: r, est: false}))).sort((a, b) => cmpK(a.k, b.k));
 const relTxt = r => r ? r[1] + (r[2] ? (r[2] > 0 ? '+' : '') + r[2] + 'd' : '') : '—';
 
 /* ---------- ordenação (como no Excel: vale para as tarefas principais e para as sucessoras de cada nível) ---------- */
@@ -661,18 +663,17 @@ const seta = k => S.sk === k ? `<span class="sa">${S.sd > 0 ? '▲' : '▼'}</sp
 function build() {
   nodes = []; byKey = {}; firstOf = {}; rootNodes = [];
   const rs = ROOTS.slice().sort(cmpK);
-  const visit = (k, parent, depth, root, rel, path) => {
+  const visit = (k, parent, depth, root, rel, path, est) => {
     const key = parent ? parent.key + '>' + k : k, fk = root + '|' + k;
     if (nodes.length > CAP) return;
-    const dup = S.dedupe && fk in firstOf;
+    const dup = S.dedupe && !est && fk in firstOf;                     // subtarefa na estrutura EDT nunca é 'repetida'
     const n = {key, k, parent, depth, root, rel, dup, kids: [], first: dup ? firstOf[fk] : null};
     nodes.push(n); byKey[key] = n; if (parent) parent.kids.push(n); else rootNodes.push(n);
     if (!(fk in firstOf)) firstOf[fk] = key;
     if (dup || path.includes(k)) return;
-    T[k].su.slice().sort((a, b) => cmpK(a[0], b[0]))
-      .forEach(r => visit(String(r[0]), n, depth + 1, root, r, path.concat(k)));
+    filhosDe(k, est).forEach(c => visit(c.k, n, depth + 1, root, c.rel, path.concat(k), c.est));
   };
-  rs.forEach(r => visit(r, null, 0, r, null, []));
+  rs.forEach(r => visit(r, null, 0, r, null, [], true));
 }
 
 /* ---------- filtros / visibilidade ---------- */
@@ -856,7 +857,7 @@ function cartao(n) {
   const cl = v => v > 0 ? ' late' : v < 0 ? ' early' : '';
   return `<div class="cd ${st}${n.depth === 0 ? ' root' : ''}${n.ctx ? ' ctx' : ''}${n.dup ? ' dup' : ''}${S.sel === n.key ? ' sel' : ''}" data-k="${n.key}" style="margin-left:${Math.min(n.depth, 6) * 9}px">
     <div class="c1">${hasK ? `<button class="ctg" data-t="${n.key}" aria-label="${open ? 'Recolher' : 'Expandir'} sucessoras">${open ? '▾' : '▸'}</button>` : '<span class="ctg none"></span>'}<span class="cn${t.sum ? ' sm' : ''}">${esc(t.n)}</span></div>
-    <div class="c2"><span class="chip">ID ${t.id} · Nív. ${n.depth}</span>${n.depth ? `<span class="chip" title="Vínculo com a tarefa de cima">${relTxt(n.rel)}</span>` : ''}
+    <div class="c2"><span class="chip">ID ${t.id} · Nív. ${n.depth}</span>${n.depth && n.rel ? `<span class="chip" title="Vínculo com a tarefa de cima">${relTxt(n.rel)}</span>` : ''}
       <span class="chip"><i class="st ${st}"></i>${ST[st]}</span><span class="chip">${Math.round(t.pc * 100)}%</span>
       ${dv ? `<span class="chip ${dv > 0 ? 'p' : 'n'}">Desvio ${sg(dv)}</span>` : ''}${hasK && !n.dup ? `<span class="chip">↳ ${n.kids.length}</span>` : ''}
       ${n.dup ? `<span class="chip rp" data-f="${n.first}">↩ repetida — ver acima</span>` : ''}</div>
@@ -949,6 +950,7 @@ const byId = (a, b) => T[a].id - T[b].id;
 function leaves(k) { return (KIDS[k] || []).flatMap(c => T[c].sum ? leaves(c) : [c]); }
 function setRoots() {
   const p = $('fp').value, k = KIDS[p] || [];
+  S.est = $('fm').value === 'e';
   ROOTS = ($('fm').value === 'l' ? leaves(p) : k).sort(byId);
   S.exp.clear(); S.sel = null; $('dr').classList.remove('open');
   $('fr').innerHTML = '<option value="">Todas as tarefas principais (' + ROOTS.length + ')</option>' + ROOTS.map(r => `<option value="${r}">${T[r].id} · ${esc(T[r].n.slice(0, 60))}</option>`).join('');
@@ -1169,16 +1171,15 @@ async function remover() {
 
 /* ---------- relatório PDF ---------- */
 const fmtL = n => new Date(n * 864e5).toISOString().slice(0, 10).split('-').reverse().join('/');
-const sucSorted = k => T[k].su.slice().sort((a, b) => cmpK(a[0], b[0]));
 function repTree(root, maxD, dedupe, rows) {
   const seen = new Set();
-  const go = (k, d, par, rel, path) => {
+  const go = (k, d, par, rel, path, est) => {
     if (rows.length > 20000 || (dedupe && d > 0 && seen.has(k))) return;
     seen.add(k); rows.push({k, d, par, rel, root});
     if (d >= maxD || path.includes(k)) return;
-    sucSorted(k).forEach(r => go(String(r[0]), d + 1, k, r, path.concat(k)));
+    filhosDe(k, est).forEach(c => go(c.k, d + 1, k, c.rel, path.concat(k), c.est));
   };
-  go(root, 0, null, null, []);
+  go(root, 0, null, null, [], true);
 }
 function pdfOpts() {
   const g = n => document.querySelector(`#pdfm [name=${n}]:checked`)?.value;
@@ -1396,7 +1397,7 @@ function loadData(d) {
 (function init() {
   $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
   $('fm').onchange = setRoots;
-  $('fp').onchange = () => { $('fm').value = (KIDS[$('fp').value] || []).every(c => T[c].sum) ? 'l' : 'd'; setRoots(); }; // filhos só-resumo: abre direto nas tarefas de detalhe
+  $('fp').onchange = () => { $('fm').value = (KIDS[$('fp').value] || []).some(c => T[c].sum) ? 'e' : 'd'; setRoots(); }; // há subgrupos: mostra a estrutura EDT (1.1 e subtarefas); só tarefas: filhos diretos
   $('vzb').onclick = trocarArquivo;
   $('ttl').addEventListener('blur', gravarTitulo);
   $('ttl').addEventListener('keydown', e => {
