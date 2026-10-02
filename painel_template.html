@@ -103,6 +103,8 @@ td.nm{cursor:default}
 .tg{display:inline-block;width:18px;text-align:center;cursor:pointer;color:var(--g1);font-size:11px;user-select:none}
 .tg.none{cursor:default;color:transparent}
 .nmt{vertical-align:middle}
+.kd{display:inline-block;width:15px;margin-right:1px;text-align:center;font-size:11px;font-weight:600;opacity:.75;vertical-align:middle;cursor:help}.kd.suc{color:#5b7ea0}.kd.sub{color:var(--g2)}
+.chip.tp.suc{color:#4a6f90}.chip.tp.sub{color:#3d7a35}
 .sumt{font-weight:700}
 .badge{display:inline-block;padding:0 6px;border-radius:9px;font-size:10.5px;line-height:16px;margin-left:6px;background:var(--g3);color:var(--g1);vertical-align:middle}
 .badge.dup{background:#fff2cf;color:#8a5a00;cursor:pointer}
@@ -372,6 +374,8 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span><i class="sw dot" style="background:var(--late)"></i>Atrasada</span>
   <span><i class="sw dot" style="background:var(--fut)"></i>Futura</span>
   <span><i class="dm"></i>Tarefa de 1 dia (marco)</span>
+  <span class="dk"><b class="kd suc" style="width:auto;opacity:1">→</b>sucessora</span>
+  <span class="dk"><b class="kd sub" style="width:auto;opacity:1">└</b>subtarefa</span>
   <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
   <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
 </div>
@@ -453,6 +457,8 @@ const filhosDe = (k, est) => {
   const sub = (KIDS[k] || []).length && (est ? S.est : true);              // grupo atingido por uma sucessora (ou na estrutura EDT) abre nas subtarefas
   return (sub ? KIDS[k].map(c => ({k: c, rel: null, est})).concat(sucDe(k)) : sucDe(k)).sort((a, b) => cmpK(a.k, b.k));
 };
+const tipoNo = n => n.depth ? (n.rel ? 'suc' : 'sub') : '';                 // sucessora (tem vínculo) ou subtarefa (está dentro do grupo)
+const KD = {suc: ['→', 'Sucessora da tarefa de cima (vínculo de dependência)'], sub: ['└', 'Subtarefa: faz parte do grupo acima']};
 const relTxt = r => r ? r[1] + (r[2] ? (r[2] > 0 ? '+' : '') + r[2] + 'd' : '') : '—';
 
 /* ---------- ordenação (como no Excel: vale para as tarefas principais e para as sucessoras de cada nível) ---------- */
@@ -606,10 +612,10 @@ function celula(k, n, ctx) {
     case 'nm': {
       const tg = hasK ? `<span class="tg" data-t="${n.key}">${open ? '▾' : '▸'}</span>` : '<span class="tg none">▸</span>';
       const bd = n.dup ? `<span class="badge dup" data-f="${n.first}" title="Já listada acima nesta dependência. Clique para ir até lá.">↩ repetida</span>`
-               : hasK ? `<span class="badge" title="Sucessoras diretas">↳ ${n.kids.length}</span>` : '';
-      return `<td class="nm${sc}" style="padding-left:${6 + n.depth * 16}px${stk[k] !== undefined ? ';left:' + stk[k] + 'px' : ''}" title="${esc(t.wbs)} · ${esc(t.n)}">${tg}<span class="st ${st}" title="${ST[st]}"></span><span class="nmt${t.sum ? ' sumt' : ''}">${esc(t.n)}</span>${bd}</td>`;
+               : hasK ? `<span class="badge" title="Itens logo abaixo (subtarefas e sucessoras)">↳ ${n.kids.length}</span>` : '';
+      return `<td class="nm${sc}" style="padding-left:${6 + n.depth * 16}px${stk[k] !== undefined ? ';left:' + stk[k] + 'px' : ''}" title="${esc(t.wbs)} · ${esc(t.n)}">${tg}${tipoNo(n) ? `<span class="kd ${tipoNo(n)}" title="${KD[tipoNo(n)][1]}">${KD[tipoNo(n)][0]}</span>` : ''}<span class="st ${st}" title="${ST[st]}"></span><span class="nmt${t.sum ? ' sumt' : ''}">${esc(t.n)}</span>${bd}</td>`;
     }
-    case 'rel': return `<td class="rel">${n.depth ? relTxt(n.rel) : '—'}</td>`;
+    case 'rel': return `<td class="rel">${n.depth ? (n.rel ? relTxt(n.rel) : '<i title="Faz parte do grupo acima">subtarefa</i>') : '—'}</td>`;
     case 'lbS': return `<td class="d lb">${fmt(t.lbS)}</td>`;
     case 'lbF': return `<td class="d lb">${fmt(t.lbF)}</td>`;
     case 's': return dcell('at', t.s, dvS(t));
@@ -682,7 +688,7 @@ function cartao(n) {
   const cl = v => v > 0 ? ' late' : v < 0 ? ' early' : '';
   return `<div class="cd ${st}${n.depth === 0 ? ' root' : ''}${n.ctx ? ' ctx' : ''}${n.dup ? ' dup' : ''}${S.sel === n.key ? ' sel' : ''}" data-k="${n.key}" style="margin-left:${Math.min(n.depth, 6) * 9}px">
     <div class="c1">${hasK ? `<button class="ctg" data-t="${n.key}" aria-label="${open ? 'Recolher' : 'Expandir'} sucessoras">${open ? '▾' : '▸'}</button>` : '<span class="ctg none"></span>'}<span class="cn${t.sum ? ' sm' : ''}">${esc(t.n)}</span></div>
-    <div class="c2"><span class="chip">ID ${t.id} · Nív. ${n.depth}</span>${n.depth && n.rel ? `<span class="chip" title="Vínculo com a tarefa de cima">${relTxt(n.rel)}</span>` : ''}
+    <div class="c2"><span class="chip">ID ${t.id} · Nív. ${n.depth}</span>${n.depth ? `<span class="chip tp ${tipoNo(n)}" title="${KD[tipoNo(n)][1]}">${KD[tipoNo(n)][0]} ${n.rel ? 'sucessora · ' + relTxt(n.rel) : 'subtarefa'}</span>` : ''}
       <span class="chip"><i class="st ${st}"></i>${ST[st]}</span><span class="chip">${Math.round(t.pc * 100)}%</span>
       ${dv ? `<span class="chip ${dv > 0 ? 'p' : 'n'}">Desvio ${sg(dv)}</span>` : ''}${hasK && !n.dup ? `<span class="chip">↳ ${n.kids.length}</span>` : ''}
       ${n.dup ? `<span class="chip rp" data-f="${n.first}">↩ repetida — ver acima</span>` : ''}</div>
@@ -714,7 +720,7 @@ function ajustarNm() {
   const cv = document.createElement('canvas').getContext('2d'); let w = 260;
   vis.forEach(n => {
     const t = T[n.k]; cv.font = (t.sum ? '700 ' : '') + '12.5px "Segoe UI", system-ui, Arial, sans-serif';
-    w = Math.max(w, 6 + n.depth * 16 + 18 + 14 + cv.measureText(t.n).width + (n.dup ? 84 : n.kids.length ? 46 : 0) + 16);
+    w = Math.max(w, 6 + n.depth * 16 + 18 + 16 + 14 + cv.measureText(t.n).width + (n.dup ? 84 : n.kids.length ? 46 : 0) + 16);
   });
   setNm(Math.ceil(w));
 }
@@ -1045,7 +1051,7 @@ function reportHtml(o) {
       case 'id': return `<td class="c ix">${t.id}</td>`;
       case 'lv': return `<td class="c ix">${r.d}</td>`;
       case 'nm': return `<td class="nm" style="padding-left:${1.5 + Math.min(r.d, W ? 6 : 5) * (W ? 3 : 1.8)}mm"><div class="tn${r.dup ? ' dp' : ''}">${esc(t.n)}${r.dup ? ' <i>(repetida — ver acima)</i>' : ''}</div>${r.d === 0 ? `<div class="ss">${ch.n ? `${ch.n} sucessora${ch.n > 1 ? 's' : ''} · cadeia termina em ${fmtN(ch.f)}` : 'Sem sucessoras'} · EDT ${esc(t.wbs)}</div>` : ''}</td>`;
-      case 'pred': return `<td class="c">${r.par ? `${T[r.par].id} · ${relTxt(r.rel)}` : '—'}</td>`;
+      case 'pred': return `<td class="c">${r.par ? `${T[r.par].id} · ${r.rel ? relTxt(r.rel) : 'subtarefa'}` : '—'}</td>`;
       case 'dv': { const v = dvF(t); return `<td class="c ${v > 0 ? 'late' : v < 0 ? 'early' : ''}"><b>${sg(v)}</b></td>`; }
       case 'pc': return `<td class="c">${Math.round(t.pc * 100)}%</td>`;
       case 'st': return `<td class="stc"><i class="dot ${st}"></i>${ST[st]}</td>`;
