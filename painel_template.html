@@ -449,7 +449,10 @@ const dvF = t => (t.d.f != null && t.d.lbF != null) ? t.d.f - t.d.lbF : null;
 const dvS = t => (t.d.s != null && t.d.lbS != null) ? t.d.s - t.d.lbS : null;
 // filhos de um nó: na estrutura EDT, as subtarefas (resumo -> filhos); fora dela (ou em tarefa de detalhe), as sucessoras
 const sucDe = k => T[k].su.map(r => ({k: String(r[0]), rel: r, est: false}));
-const filhosDe = (k, est) => (est && S.est && (KIDS[k] || []).length ? KIDS[k].map(c => ({k: c, rel: null, est: true})).concat(sucDe(k)) : sucDe(k)).sort((a, b) => cmpK(a.k, b.k));   // grupo: subtarefas + as próprias sucessoras
+const filhosDe = (k, est) => {
+  const sub = (KIDS[k] || []).length && (est ? S.est : true);              // grupo atingido por uma sucessora (ou na estrutura EDT) abre nas subtarefas
+  return (sub ? KIDS[k].map(c => ({k: c, rel: null, est})).concat(sucDe(k)) : sucDe(k)).sort((a, b) => cmpK(a.k, b.k));
+};
 const relTxt = r => r ? r[1] + (r[2] ? (r[2] > 0 ? '+' : '') + r[2] + 'd' : '') : '—';
 
 /* ---------- ordenação (como no Excel: vale para as tarefas principais e para as sucessoras de cada nível) ---------- */
