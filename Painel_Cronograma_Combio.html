@@ -50,15 +50,16 @@ body.gating #gate{display:flex}
 #gform h2{margin:0;color:var(--g1);font-size:17px}#gform p{margin:0;color:var(--mut);font-size:13px}
 #gform input{font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:5px}
 #gerr{color:#b3261e;font-size:12.5px;min-height:16px}
-#cronm{position:fixed;inset:0;background:rgba(20,38,28,.5);z-index:150;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:60px 16px}
-#cronm.on{display:flex}
+#cronm,#pubm{position:fixed;inset:0;background:rgba(20,38,28,.5);z-index:150;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:60px 16px}
+#cronm.on,#pubm.on{display:flex}
+.mdl .pb{display:flex;flex-direction:column;gap:6px;padding:14px 18px}.mdl .pb select,.mdl .pb input[type=text]{font-size:14px;padding:6px 8px}.mdl .pb label{font-weight:600}
 .mdl.cm{width:520px}.mdl.cm .mh{display:flex;align-items:center}.mdl.cm .mh button{margin-left:auto;background:none;border:0;color:#fff;font-size:22px;line-height:1;padding:0 4px}
 .cl{display:flex;flex-direction:column;padding:8px}
 .cl button{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;text-align:left;border:1px solid var(--line);border-radius:6px;margin:4px;padding:10px 12px;background:#fff;color:var(--ink)}
 .cl button:hover{background:var(--g3)}.cl button.on{border-color:var(--g2);background:var(--g4)}
 .cl button b{color:var(--g1);font-size:14.5px}.cl button small{flex-basis:100%;color:var(--mut);font-size:12px}.cl button i{margin-left:auto;font-style:normal;font-size:11px;color:var(--g2);font-weight:700}
-body.mob #cronm{padding:0;align-items:stretch}body.mob .mdl.cm{width:100%;min-height:100%;border-radius:0}
-#bcron,#bpub,#brem{display:none}body.multi #bcron,body.adm #bpub,body.adm.tem #brem{display:inline-flex}
+body.mob #cronm,body.mob #pubm{padding:0;align-items:stretch}body.mob .mdl.cm{width:100%;min-height:100%;border-radius:0}
+#bcron,#bpub,#brem,#bren{display:none}body.multi #bcron,body.adm #bpub,body.adm.tem #brem,body.adm.tem #bren{display:inline-flex}
 #csel{display:none;margin-top:5px;max-width:100%;font:inherit;font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:5px;padding:3px 6px}
 #csel option{color:#14261c;background:#fff}body.multi #csel{display:block}
 button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
@@ -217,7 +218,7 @@ body.mob header .acts button{background:#fff;color:var(--g1);border-color:var(--
 body.mob header .acts button.off{opacity:1}
 body.mob header .acts button.rb{display:block;height:auto;border-radius:5px;overflow:visible;white-space:normal}
 body.mob header .acts{align-items:stretch}
-body.mob.multi #bcron,body.mob.adm #bpub,body.mob.adm.tem #brem{display:block}
+body.mob.multi #bcron,body.mob.adm #bpub,body.mob.adm.tem #brem,body.mob.adm.tem #bren{display:block}
 body.mob header .acts button.rb svg{display:none}
 body.mob header .acts button.rb span{max-width:none;opacity:1;margin:0}
 body.mob header .acts button.pdf{width:auto;font-size:14.5px;font-weight:400;letter-spacing:0}
@@ -315,6 +316,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
     <button id="bfile" class="rb" title="Carregar outro cronograma (.mpp)" aria-label="Trocar arquivo Project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Trocar arquivo Project</span></button>
     <button id="bcron" class="rb" title="Ver e trocar de cronograma" aria-label="Cronogramas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>Cronogramas</span></button>
     <button id="bpub" class="rb" title="Publicar este cronograma no painel online (GitHub Pages)" aria-label="Publicar online"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V5M7.5 9.5 12 5l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Publicar online</span></button>
+    <button id="bren" class="rb" title="Mudar o nome deste cronograma na lista (o link não muda)" aria-label="Renomear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span>Renomear</span></button>
     <button id="brem" class="rb" title="Apagar este cronograma do painel online" aria-label="Remover do online"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg><span>Remover do online</span></button>
     <button id="bsave" class="rb" title="Baixar este painel como um HTML autônomo, com os dados carregados" aria-label="Salvar HTML"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg><span>Salvar HTML</span></button>
     <button id="bpdf" class="rb pdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">PDF</button>
@@ -395,6 +397,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
 <div id="tip"></div>
 <div id="pdfm"></div>
 <div id="cronm"></div>
+<div id="pubm"></div>
 <div id="ldg"></div>
 <div id="gate"><form id="gform"><h2>Painel de Sucessoras</h2><p>Acesso restrito. Digite a senha.</p><input id="gpw" type="password" autocomplete="current-password" placeholder="Senha"><button class="pri">Entrar</button><div id="gerr"></div></form></div>
 </main>
@@ -1105,21 +1108,50 @@ async function indiceAtual(tk, pw) {                                         // 
   const g = await ghGet(tk, IDXF); if (!g) return {sha: undefined, lista: []};
   try { return {sha: g.sha, lista: await decifrar(g.txt, pw)}; } catch (e) { throw new Error('A senha informada é diferente da usada nas publicações anteriores.'); }
 }
+function escolherPublicacao() {                                             // pergunta: atualizar um existente ou criar novo
+  return new Promise(res => {
+    const m = $('pubm'), tem = IDX.length > 0, cur = IDX.some(c => c.id === CUR) ? CUR : tem ? IDX[0].id : '';
+    m.innerHTML = `<div class="mdl cm"><div class="mh">Publicar online<button id="pbx" aria-label="Fechar">×</button></div><div class="pb">
+      ${tem ? `<label><input type="radio" name="pm" value="u" checked> Atualizar um cronograma já publicado</label><select id="pbs">${IDX.map(c => `<option value="${esc(c.id)}"${c.id === cur ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select><small>O link continua o mesmo; só o conteúdo é substituído.</small>` : ''}
+      <label style="margin-top:${tem ? 10 : 0}px"><input type="radio" name="pm" value="n"${tem ? '' : ' checked'}> Novo cronograma (ganha um link novo)</label><input type="text" id="pbn" value="${esc(D.titulo || D.projeto)}" placeholder="Nome do cronograma"></div>
+      <div class="mf"><span class="inf"></span><button id="pbc">Cancelar</button><button class="pri" id="pbok">Publicar</button></div></div>`;
+    m.classList.add('on');
+    const fim = v => { m.classList.remove('on'); res(v); }, rd = v => { const r = m.querySelector(`[name=pm][value=${v}]`); if (r) r.checked = true; };
+    $('pbc').onclick = $('pbx').onclick = () => fim(null);
+    $('pbn').onfocus = () => rd('n'); if (tem) $('pbs').onfocus = () => rd('u');
+    $('pbok').onclick = () => {
+      if (m.querySelector('[name=pm]:checked').value === 'u') return fim({id: $('pbs').value});
+      const nome = $('pbn').value.trim(); if (!slug(nome)) { $('pbn').focus(); return; } fim({nome});
+    };
+  });
+}
 async function publicar() {
+  const e = await escolherPublicacao(); if (!e) return;
   const a = await tokenSenha(); if (!a) return;
-  const nome = D.titulo || D.projeto, def = (CUR && IDX.some(c => c.id === CUR)) ? CUR : slug(nome);
-  const id = slug(prompt('Nome do cronograma online (só letras, números e hífen).\nNome já existente = atualiza; nome novo = adiciona.' + (IDX.length ? '\nJá publicados: ' + IDX.map(c => c.id).join(', ') : ''), def) || '');
-  if (!id) return;
   busy('Publicando …'); await new Promise(r => setTimeout(r, 30));
   try {
-    const {tk, pw} = a, msg = 'chore(dados): atualiza cronograma ' + id, ix = await indiceAtual(tk, pw);
-    await ghPut(tk, cronF(id), await cifrar(dadosJson(), pw), (await ghGet(tk, cronF(id)))?.sha, msg);
-    const lista = ix.lista.filter(c => c.id !== id); lista.unshift({id, nome, arquivo: D.arquivo, em: new Date().toISOString()});
+    const {tk, pw} = a, ix = await indiceAtual(tk, pw), ex = e.id && ix.lista.find(c => c.id === e.id);
+    let id = e.id, nome = ex ? ex.nome : (e.nome || (IDX.find(c => c.id === e.id) || {}).nome || D.projeto);   // atualizar mantém o nome (inclusive renomeado)
+    if (!id) { const base = slug(e.nome); id = base; for (let n = 2; ix.lista.some(c => c.id === id); n++) id = base + '-' + n; }
+    await ghPut(tk, cronF(id), await cifrar(dadosJson(), pw), (await ghGet(tk, cronF(id)))?.sha, 'chore(dados): atualiza cronograma ' + id);
+    const novo = {id, nome, arquivo: D.arquivo, em: new Date().toISOString()}, lista = ix.lista.some(c => c.id === id) ? ix.lista.map(c => c.id === id ? novo : c) : [novo, ...ix.lista];
     await ghPut(tk, IDXF, await cifrar(JSON.stringify(lista), pw), ix.sha, 'chore(dados): atualiza índice de cronogramas');
     try { localStorage.setItem('combio_gh', tk); localStorage.setItem('combio_pw', pw); } catch (e) {}
     PW = pw; IDX = lista; CUR = id; listaCron();
-    alert('Publicado como "' + id + '"! Quem abrir o painel online vê a nova versão em cerca de 1 minuto.\nLink direto: ' + location.origin + location.pathname + '#c=' + id);
+    alert((ex ? 'Atualizado' : 'Publicado') + ' como "' + nome + '"! Quem abrir o painel online vê a nova versão em cerca de 1 minuto.\nLink direto: ' + location.origin + location.pathname + '#c=' + id);
   } catch (e) { alert('Não foi possível publicar.\n' + e.message); }
+  busy('');
+}
+async function renomear() {
+  const c = IDX.find(x => x.id === CUR); if (!c) return;
+  const nome = (prompt('Novo nome para este cronograma na lista (o link não muda):', c.nome) || '').trim(); if (!nome || nome === c.nome) return;
+  const a = await tokenSenha(); if (!a) return;
+  busy('Renomeando …'); await new Promise(r => setTimeout(r, 30));
+  try {
+    const {tk, pw} = a, ix = await indiceAtual(tk, pw), lista = ix.lista.map(x => x.id === c.id ? {...x, nome} : x);
+    await ghPut(tk, IDXF, await cifrar(JSON.stringify(lista), pw), ix.sha, 'chore(dados): renomeia ' + c.id);
+    PW = pw; IDX = lista; listaCron(); alert('Renomeado para "' + nome + '". Os visitantes veem em cerca de 1 minuto.');
+  } catch (e) { alert('Não foi possível renomear.\n' + e.message); }
   busy('');
 }
 async function remover() {
@@ -1396,7 +1428,7 @@ function loadData(d) {
   addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
   $('bfil').onclick = () => document.body.classList.add('filopen'); $('fx').onclick = $('bk').onclick = fecharFolhas;
   $('bmenu').onclick = () => document.body.classList.toggle('menuopen');
-  ['bfile', 'bsave', 'bpdf', 'bpub', 'brem', 'bcron'].forEach(i => $(i).addEventListener('click', fecharFolhas));
+  ['bfile', 'bsave', 'bpdf', 'bpub', 'brem', 'bren', 'bcron'].forEach(i => $(i).addEventListener('click', fecharFolhas));
   $('qm').oninput = () => { $('q').value = $('qm').value; render(); };
   $('q').addEventListener('input', () => { $('qm').value = $('q').value; });
   $('chips').onclick = e => {
@@ -1419,7 +1451,7 @@ function loadData(d) {
   $('nmw').oninput = () => setNm(+$('nmw').value); $('nmfit').onclick = ajustarNm;
   $('nmwrap').onchange = () => { S.wrap = $('nmwrap').checked; render(); };
   $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
-  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('brem').onclick = remover; $('bcron').onclick = abrirLista;
+  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('brem').onclick = remover; $('bcron').onclick = abrirLista; $('bren').onclick = renomear;
   $('cronm').onclick = e => { const b = e.target.closest('[data-id]'); if (b) { $('cronm').classList.remove('on'); abrirCron(b.dataset.id); } else if (e.target === $('cronm') || e.target.closest('#cmx')) $('cronm').classList.remove('on'); }; $('csel').onchange = () => abrirCron($('csel').value); $('bpdf').onclick = abrirPdf;
   $('tb').onclick = e => {
     const cx = e.target.closest('.cx'); if (cx) { ocultarCol(cx.closest('th').dataset.c); return; }
