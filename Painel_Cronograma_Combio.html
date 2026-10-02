@@ -342,7 +342,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span class="grp">Escopo</span>
   <label class="dk">Buscar <input type="text" id="q" placeholder="nome da tarefa ou ID"></label>
   <label>Tarefa principal (EDT) <select id="fp" style="max-width:300px"></select></label>
-  <label><select id="fm"><option value="d">Raízes: filhos diretos</option><option value="l">Raízes: tarefas de detalhe</option><option value="e">Estrutura EDT: subtarefas</option></select></label>
+  <label><select id="fm"><option value="e">Tudo em árvore (EDT) · recomendado</option><option value="l">Todas as tarefas em lista corrida</option><option value="d">Só o nível logo abaixo (resumido)</option></select></label>
   <label>Filtrar tarefa <select id="fr" style="max-width:240px"></select></label>
   <label>Status <select id="fs"><option value="">Todos</option><option value="ok">Concluída</option><option value="run">Em andamento</option><option value="late">Atrasada</option><option value="fut">Futura</option></select></label>
   <label><input type="checkbox" id="fd"> Só com desvio</label>
@@ -630,7 +630,8 @@ function chain(k) {
 const dvF = t => (t.d.f != null && t.d.lbF != null) ? t.d.f - t.d.lbF : null;
 const dvS = t => (t.d.s != null && t.d.lbS != null) ? t.d.s - t.d.lbS : null;
 // filhos de um nó: na estrutura EDT, as subtarefas (resumo -> filhos); fora dela (ou em tarefa de detalhe), as sucessoras
-const filhosDe = (k, est) => (est && S.est && (KIDS[k] || []).length ? KIDS[k].map(c => ({k: c, rel: null, est: true})) : T[k].su.map(r => ({k: String(r[0]), rel: r, est: false}))).sort((a, b) => cmpK(a.k, b.k));
+const sucDe = k => T[k].su.map(r => ({k: String(r[0]), rel: r, est: false}));
+const filhosDe = (k, est) => (est && S.est && (KIDS[k] || []).length ? KIDS[k].map(c => ({k: c, rel: null, est: true})).concat(sucDe(k)) : sucDe(k)).sort((a, b) => cmpK(a.k, b.k));   // grupo: subtarefas + as próprias sucessoras
 const relTxt = r => r ? r[1] + (r[2] ? (r[2] > 0 ? '+' : '') + r[2] + 'd' : '') : '—';
 
 /* ---------- ordenação (como no Excel: vale para as tarefas principais e para as sucessoras de cada nível) ---------- */
@@ -950,7 +951,7 @@ let KIDS = {};
 const mkKids = () => { KIDS = {}; for (const k in T) { const p = T[k].par; if (p != null) (KIDS[p] = KIDS[p] || []).push(k); } };
 mkKids();
 const byId = (a, b) => T[a].id - T[b].id;
-function leaves(k) { return (KIDS[k] || []).flatMap(c => T[c].sum ? leaves(c) : [c]); }
+function leaves(k) { return (KIDS[k] || []).flatMap(c => T[c].sum ? (T[c].su.length ? [c] : []).concat(leaves(c)) : [c]); }   // tarefas de detalhe + grupos que têm sucessoras próprias
 function setRoots() {
   const p = $('fp').value, k = KIDS[p] || [];
   S.est = $('fm').value === 'e';
