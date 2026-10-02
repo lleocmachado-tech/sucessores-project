@@ -30,6 +30,12 @@ header .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 header .acts button{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.55)}
 header .acts button:hover{background:rgba(255,255,255,.28)}
 header .acts button.off{opacity:.55}
+header .acts{align-items:center}
+header .acts button.rb{display:inline-flex;align-items:center;justify-content:center;height:36px;min-width:36px;padding:0 9px;border-radius:18px;overflow:hidden;white-space:nowrap}
+header .acts button.rb svg{width:18px;height:18px;flex:none}
+header .acts button.rb span{max-width:0;opacity:0;margin-left:0;transition:max-width .25s ease,opacity .2s ease,margin-left .25s ease}
+header .acts button.rb:hover span,header .acts button.rb:focus-visible span{max-width:220px;opacity:1;margin-left:8px}
+header .acts button.pdf{width:36px;padding:0;font-size:11px;font-weight:700;letter-spacing:.3px}
 @media(max-width:1180px){header .right{display:none}}
 @media(max-width:700px){header .tt{border-left:0;padding-left:0;flex-basis:100%}header img{height:30px}}
 header .right{margin-left:20px;text-align:right;font-size:11.5px;opacity:.85}
@@ -52,7 +58,7 @@ body.gating #gate{display:flex}
 .cl button:hover{background:var(--g3)}.cl button.on{border-color:var(--g2);background:var(--g4)}
 .cl button b{color:var(--g1);font-size:14.5px}.cl button small{flex-basis:100%;color:var(--mut);font-size:12px}.cl button i{margin-left:auto;font-style:normal;font-size:11px;color:var(--g2);font-weight:700}
 body.mob #cronm{padding:0;align-items:stretch}body.mob .mdl.cm{width:100%;min-height:100%;border-radius:0}
-#bcron,#bpub,#brem{display:none}body.multi #bcron{display:inline-block}body.adm #bpub,body.adm.tem #brem{display:inline-block}
+#bcron,#bpub,#brem{display:none}body.multi #bcron,body.adm #bpub,body.adm.tem #brem{display:inline-flex}
 #csel{display:none;margin-top:5px;max-width:100%;font:inherit;font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:5px;padding:3px 6px}
 #csel option{color:#14261c;background:#fff}body.multi #csel{display:block}
 button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
@@ -209,6 +215,12 @@ body.mob header .acts{display:none;position:absolute;right:10px;top:calc(100% + 
 body.mob.menuopen header .acts{display:flex}
 body.mob header .acts button{background:#fff;color:var(--g1);border-color:var(--line);text-align:left;padding:13px 12px;font-size:14.5px}
 body.mob header .acts button.off{opacity:1}
+body.mob header .acts button.rb{display:block;height:auto;border-radius:5px;overflow:visible;white-space:normal}
+body.mob header .acts{align-items:stretch}
+body.mob.multi #bcron,body.mob.adm #bpub,body.mob.adm.tem #brem{display:block}
+body.mob header .acts button.rb svg{display:none}
+body.mob header .acts button.rb span{max-width:none;opacity:1;margin:0}
+body.mob header .acts button.pdf{width:auto;font-size:14.5px;font-weight:400;letter-spacing:0}
 body.mob .mbar{display:block;flex:none;background:#fff;border-bottom:1px solid var(--line);padding:8px 10px 6px}
 body.mob .mrow{display:flex;gap:8px}
 body.mob #qm{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;-webkit-appearance:none;appearance:none}
@@ -300,12 +312,12 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <img src="__LOGO__" alt="Combio">
   <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div><select id="csel" aria-label="Cronograma"></select></div>
   <div class="acts">
-    <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
-    <button id="bcron" title="Ver e trocar de cronograma">Cronogramas</button>
-    <button id="bpub" title="Publicar este cronograma no painel online (GitHub Pages)">Publicar online</button>
-    <button id="brem" title="Apagar este cronograma do painel online">Remover do online</button>
-    <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
-    <button id="bpdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">Relatório PDF</button>
+    <button id="bfile" class="rb" title="Carregar outro cronograma (.mpp)" aria-label="Trocar arquivo Project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Trocar arquivo Project</span></button>
+    <button id="bcron" class="rb" title="Ver e trocar de cronograma" aria-label="Cronogramas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>Cronogramas</span></button>
+    <button id="bpub" class="rb" title="Publicar este cronograma no painel online (GitHub Pages)" aria-label="Publicar online"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V5M7.5 9.5 12 5l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Publicar online</span></button>
+    <button id="brem" class="rb" title="Apagar este cronograma do painel online" aria-label="Remover do online"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg><span>Remover do online</span></button>
+    <button id="bsave" class="rb" title="Baixar este painel como um HTML autônomo, com os dados carregados" aria-label="Salvar HTML"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg><span>Salvar HTML</span></button>
+    <button id="bpdf" class="rb pdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">PDF</button>
   </div>
   <button id="bmenu" aria-label="Menu de ações">⋮</button>
   <div class="right" id="gen"></div>
@@ -802,7 +814,7 @@ async function lerArquivo(f) {
 const trocarArquivo = () => $('fin').click();
 function vazio() {
   document.body.classList.add('vazio'); $('ttl').removeAttribute('contenteditable'); $('ttl').textContent = 'Painel de Sucessoras'; $('sub').textContent = 'Nenhum cronograma carregado'; $('gen').innerHTML = '';
-  $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = true;
+  $('bfile').querySelector('span').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = true;
   $('vzh').innerHTML = S.mob ? 'Escolha o <b>.mpp</b> (ou <b>.xml</b>) do MS Project que está no aparelho, ou abra um <b>HTML salvo</b> pelo computador (botão <b>Salvar HTML</b>).' : 'Aceita o arquivo <b>.mpp</b> do MS Project (2010 ou mais novo) ou o <b>.xml</b> exportado por ele. A leitura é feita aqui mesmo, no navegador; nada é enviado a lugar nenhum.';
 }
 ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (!colArrasto) document.body.classList.add('dragging'); }));
@@ -1153,7 +1165,7 @@ function loadData(d) {
   const old = T && $('fp').value && T[$('fp').value] ? T[$('fp').value] : null;
   D = d; T = D.tasks; prep(); mkKids(); chainMemo = {};
   S.cut = dn(D.dataStatus) ?? S.cut; $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
-  document.body.classList.remove('vazio'); $('bfile').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = false;
+  document.body.classList.remove('vazio'); $('bfile').querySelector('span').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = $('bpub').disabled = false;
   try { if (!D.titulo) D.titulo = localStorage.getItem('combio_tit:' + D.arquivo) || undefined; } catch (e) {}   // título editado volta ao reabrir o mesmo arquivo
   mostrarTitulo();
   $('sub').textContent = `${D.arquivo} · Rev. ${D.revisao}${D.salvoEm ? ' · salvo em ' + fmt(D.salvoEm) : ''}${D.dataStatus ? ' · data de status do cronograma ' + fmt(D.dataStatus) : ''}`;
