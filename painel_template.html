@@ -40,7 +40,8 @@ button.pri{background:var(--g1);color:#fff;border-color:var(--g1)}button.pri:hov
 .legend{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:8px 20px;font-size:11.5px;color:var(--mut);flex:none}
 .legend i{display:inline-block;vertical-align:middle;margin-right:4px}
 .sw{width:18px;height:9px;border-radius:2px}
-.dm{width:9px;height:9px;transform:rotate(45deg);background:var(--g1)}
+.sw.dot{width:9px;height:9px;border-radius:50%}
+.dm{width:9px;height:9px;transform:rotate(45deg);background:var(--g2)}
 main{flex:1 0 440px;position:relative;margin:0 20px 14px;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .wrap{position:absolute;inset:0;overflow:auto}
 table{border-collapse:separate;border-spacing:0;table-layout:fixed}
@@ -85,14 +86,10 @@ td.g{position:relative;padding:0;overflow:visible}
 .gh .yr{top:3px;font-weight:700;border-left:1px solid rgba(255,255,255,.5);padding-left:4px}
 .gh .mo{top:31px;border-left:1px solid rgba(255,255,255,.25);padding-left:3px;opacity:.9}
 .bar{position:absolute;border-radius:2px}
-.bar.bl{top:24px;height:4px;background:var(--lb);opacity:.85}
-.bar.ac{top:3px;height:5px;background:var(--real)}
-.bar.cu{top:10px;height:12px}
-.bar.cu.ok{background:var(--ok)}.bar.cu.run{background:#a9d3a4}.bar.cu.late{background:#e7a69e}.bar.cu.fut{background:#b7c4d1}
-.bar .pg{position:absolute;left:0;top:0;bottom:0;border-radius:2px}
-.bar.cu.run .pg{background:var(--run)}.bar.cu.late .pg{background:var(--late)}.bar.cu.fut .pg{background:var(--fut)}
-.ms{position:absolute;top:10px;width:12px;height:12px;transform:rotate(45deg);margin-left:-6px}
-.ms.ok{background:var(--ok)}.ms.run{background:var(--run)}.ms.late{background:var(--late)}.ms.fut{background:var(--fut)}
+.bar.bl{top:68%;height:27%;background:var(--lb)}
+.bar.cu{top:5%;height:63%;background:var(--g2)}
+.bar .pg{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--ok)}
+.ms{position:absolute;top:calc(36% - 6px);width:12px;height:12px;transform:rotate(45deg);margin-left:-6px;background:var(--g2)}
 .lab{position:absolute;top:9px;font-size:10.5px;color:var(--ink);white-space:nowrap;line-height:14px}
 .lab .l{color:var(--lb)}
 #ov{position:absolute;pointer-events:none;z-index:2}
@@ -227,13 +224,11 @@ body.mob .vzc h2{font-size:18px}
 .dl span{color:var(--mut)}.dl b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 .dl b.late{color:var(--late)}.dl b.early{color:var(--ok)}
 .c5{font-size:12px;color:var(--mut);margin-top:4px}
-.mini{position:relative;height:16px;margin-top:7px;background:#f0f4f1;border-radius:3px;overflow:hidden}
+.mini{position:relative;height:20px;margin-top:7px;background:#f0f4f1;border-radius:3px;overflow:hidden}
 .mini i{position:absolute;display:block}
-.mini .bl{top:11px;height:3px;background:var(--lb)}
-.mini .cu{top:3px;height:7px;border-radius:2px;min-width:3px}
-.mini .cu.ok{background:var(--ok)}.mini .cu.run{background:var(--run)}.mini .cu.late{background:var(--late)}.mini .cu.fut{background:var(--fut)}
-.mini .ms{top:3px;width:8px;height:8px;margin-left:-4px;transform:rotate(45deg)}
-.mini .ms.ok{background:var(--ok)}.mini .ms.run{background:var(--run)}.mini .ms.late{background:var(--late)}.mini .ms.fut{background:var(--fut)}
+.mini .bl{top:68%;height:27%;background:var(--lb)}
+.mini .cu{top:5%;height:63%;border-radius:2px;min-width:3px;background:var(--g2)}
+.mini .ms{top:calc(36% - 4px);width:8px;height:8px;margin-left:-4px;transform:rotate(45deg);background:var(--g2)}
 .mini .mcut{top:0;bottom:0;width:0;border-left:2px solid var(--late);opacity:.8}
 .mfim{text-align:center;color:var(--mut);font-size:12px;padding:10px}
 /* filtros (folha inferior) */
@@ -334,11 +329,12 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
         <button id="bcsv" class="pri" style="margin-left:auto">Exportar vista (CSV)</button>
 </div>
 <div class="legend">
-  <span><i class="sw" style="background:var(--ok)"></i>Concluída</span>
-  <span><i class="sw" style="background:var(--run)"></i>Em andamento</span>
-  <span><i class="sw" style="background:var(--late)"></i>Atrasada</span>
-  <span><i class="sw" style="background:var(--fut)"></i>Futura</span>
-  <span><i class="sw" style="background:var(--lb);height:4px"></i>Linha de base</span>
+  <span><i class="sw" style="background:var(--g2)"></i>Atual</span>
+  <span><i class="sw" style="background:var(--lb)"></i>Linha de base</span>
+  <span><i class="sw dot" style="background:var(--ok)"></i>Concluída</span>
+  <span><i class="sw dot" style="background:var(--run)"></i>Em andamento</span>
+  <span><i class="sw dot" style="background:var(--late)"></i>Atrasada</span>
+  <span><i class="sw dot" style="background:var(--fut)"></i>Futura</span>
   <span><i class="dm"></i>Tarefa de 1 dia (marco)</span>
   <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
   <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
@@ -973,7 +969,9 @@ function dicaBarras(e) {
   tip.style.top = Math.min(e.clientY + 16, innerHeight - tip.offsetHeight - 8) + 'px';
 }
 document.addEventListener('mousemove', dicaBarras);
-document.addEventListener('mouseleave', () => { $('tip').dataset.g = ''; }, true);
+const sumirDica = () => { const t = $('tip'); if (t.dataset.g) { t.style.display = 'none'; t.dataset.g = ''; } };
+$('wrap').addEventListener('mouseleave', sumirDica);                          // saiu da tabela
+document.addEventListener('mouseout', e => { if (!e.relatedTarget) sumirDica(); });   // saiu da janela
 $('wrap').addEventListener('scroll', () => { if ($('tip').dataset.g) { $('tip').style.display = 'none'; $('tip').dataset.g = ''; } });
 
 /* ---------- ajuda das colunas ---------- */
@@ -986,7 +984,7 @@ const TIPS = {
   dv: '<b>Desvio de término</b><br>Término atual − Término da linha de base, em dias corridos.<hr><b style="color:#ff9b8f">+Nd</b> = atrasada · <b>−Nd</b> = adiantada · 0d = no prazo.',
   pc: '<b>% concluído</b><br>Percentual de conclusão registrado na tarefa no MS Project.',
   ch: '<b>Cadeia (suc. · fim)</b><br>Quantas sucessoras a tarefa tem no total (diretas e indiretas, até a última) · e a data do <b>maior término atual</b> entre a tarefa e todas elas — ou seja, até quando essa cadeia se estende. É o impacto se a tarefa atrasar.',
-  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Passe o mouse sobre as barras de uma linha para ver as datas.'
+  gt: '<b>Linha do tempo</b><br>Barra <b>verde</b> (em cima) = datas <b>atuais</b>; o trecho verde-escuro é o % concluído.<br>Barra <b>cinza</b> (embaixo) = <b>linha de base</b>.<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Passe o mouse sobre as barras de uma linha para ver as datas.'
 };
 (function () {
   const tip = $('tip');
