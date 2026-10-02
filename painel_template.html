@@ -969,7 +969,7 @@ function dicaBarras(e) {
   const n = byKey[td.parentElement.dataset.k]; if (!n) return;
   if (tip.dataset.g !== n.key) {
     const t = T[n.k], dv = dvF(t), sg = v => v == null ? '—' : (v > 0 ? '+' : '') + v + 'd';
-    tip.innerHTML = `<b>${esc(t.n)}</b><hr><b>Atual</b> ${fmt(t.s)} → ${fmt(t.f)} · ${Math.round(t.pc * 100)}%<br><b>Linha de base</b> ${fmt(t.lbS)} → ${fmt(t.lbF)}<br><b>Real</b> ${t.asS ? fmt(t.asS) + ' → ' + (t.asF ? fmt(t.asF) : 'em andamento') : '—'}<br><b>Desvio de término</b> ${sg(dv)}`;
+    tip.innerHTML = `<b>${esc(t.n)}</b><hr><b>Atual</b> ${fmt(t.s)} → ${fmt(t.f)} · ${Math.round(t.pc * 100)}%<br><b>Linha de base</b> ${fmt(t.lbS)} → ${fmt(t.lbF)}<br><b>Desvio de término</b> ${sg(dv)}`;
     tip.dataset.g = n.key; tip.style.display = 'block';
   }
   tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8)) + 'px';
