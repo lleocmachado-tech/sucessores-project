@@ -44,7 +44,15 @@ body.gating #gate{display:flex}
 #gform h2{margin:0;color:var(--g1);font-size:17px}#gform p{margin:0;color:var(--mut);font-size:13px}
 #gform input{font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:5px}
 #gerr{color:#b3261e;font-size:12.5px;min-height:16px}
-#bpub,#brem{display:none}body.adm #bpub,body.adm.tem #brem{display:inline-block}
+#cronm{position:fixed;inset:0;background:rgba(20,38,28,.5);z-index:150;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:60px 16px}
+#cronm.on{display:flex}
+.mdl.cm{width:520px}.mdl.cm .mh{display:flex;align-items:center}.mdl.cm .mh button{margin-left:auto;background:none;border:0;color:#fff;font-size:22px;line-height:1;padding:0 4px}
+.cl{display:flex;flex-direction:column;padding:8px}
+.cl button{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;text-align:left;border:1px solid var(--line);border-radius:6px;margin:4px;padding:10px 12px;background:#fff;color:var(--ink)}
+.cl button:hover{background:var(--g3)}.cl button.on{border-color:var(--g2);background:var(--g4)}
+.cl button b{color:var(--g1);font-size:14.5px}.cl button small{flex-basis:100%;color:var(--mut);font-size:12px}.cl button i{margin-left:auto;font-style:normal;font-size:11px;color:var(--g2);font-weight:700}
+body.mob #cronm{padding:0;align-items:stretch}body.mob .mdl.cm{width:100%;min-height:100%;border-radius:0}
+#bcron,#bpub,#brem{display:none}body.multi #bcron{display:inline-block}body.adm #bpub,body.adm.tem #brem{display:inline-block}
 #csel{display:none;margin-top:5px;max-width:100%;font:inherit;font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:5px;padding:3px 6px}
 #csel option{color:#14261c;background:#fff}body.multi #csel{display:block}
 button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
@@ -293,6 +301,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div><select id="csel" aria-label="Cronograma"></select></div>
   <div class="acts">
     <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
+    <button id="bcron" title="Ver e trocar de cronograma">Cronogramas</button>
     <button id="bpub" title="Publicar este cronograma no painel online (GitHub Pages)">Publicar online</button>
     <button id="brem" title="Apagar este cronograma do painel online">Remover do online</button>
     <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
@@ -373,6 +382,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <aside id="dr"></aside>
 <div id="tip"></div>
 <div id="pdfm"></div>
+<div id="cronm"></div>
 <div id="ldg"></div>
 <div id="gate"><form id="gform"><h2>Painel de Sucessoras</h2><p>Acesso restrito. Digite a senha.</p><input id="gpw" type="password" autocomplete="current-password" placeholder="Senha"><button class="pri">Entrar</button><div id="gerr"></div></form></div>
 </main>
@@ -834,7 +844,12 @@ async function buscarOnline(arq) {
 const slug = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 function listaCron() {                                                       // seletor no cabeçalho
   const sel = $('csel'); sel.innerHTML = IDX.map(c => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join(''); if (CUR) sel.value = CUR;
-  document.body.classList.toggle('multi', IDX.length > 1 || (ADM && IDX.length > 0)); document.body.classList.toggle('tem', !!CUR && IDX.some(c => c.id === CUR));
+  document.body.classList.toggle('multi', IDX.length > 0); document.body.classList.toggle('tem', !!CUR && IDX.some(c => c.id === CUR));
+}
+function abrirLista() {
+  const q = c => { const d = new Date(c.em); return isNaN(d) ? '' : ' · publicado em ' + d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}); };
+  $('cronm').innerHTML = `<div class="mdl cm"><div class="mh">Cronogramas disponíveis<button id="cmx" aria-label="Fechar">×</button></div><div class="cl">${IDX.map(c => `<button data-id="${esc(c.id)}"${c.id === CUR ? ' class="on"' : ''}><b>${esc(c.nome)}</b>${c.id === CUR ? '<i>aberto</i>' : ''}<small>${esc(c.arquivo || '')}${q(c)}</small></button>`).join('')}</div></div>`;
+  $('cronm').classList.add('on');
 }
 async function abrirCron(id) {
   const c = IDX.find(x => x.id === id) || IDX[0];
@@ -852,7 +867,9 @@ async function destravar(pw) {
   PW = pw; try { localStorage.setItem('combio_pw', pw); } catch (e) {} document.body.classList.remove('gating');
   if (!ENVI) { loadData(d); return true; }                                   // formato antigo: dados.json único
   let ult = ''; try { ult = localStorage.getItem('combio_cur') || ''; } catch (e) {}
-  await abrirCron(hashC() || ult); return true;
+  const alvo = hashC() || ult;
+  if (IDX.length > 1 && !IDX.some(c => c.id === alvo)) { listaCron(); abrirLista(); } else await abrirCron(alvo);   // vários e sem escolha prévia: mostra a lista
+  return true;
 }
 async function abrirOnline() {
   busy('Carregando cronograma …'); ENVI = await buscarOnline(IDXF); if (!ENVI) ENV = await buscarOnline('dados.json'); busy('');
@@ -1185,7 +1202,7 @@ function loadData(d) {
   addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
   $('bfil').onclick = () => document.body.classList.add('filopen'); $('fx').onclick = $('bk').onclick = fecharFolhas;
   $('bmenu').onclick = () => document.body.classList.toggle('menuopen');
-  ['bfile', 'bsave', 'bpdf', 'bpub', 'brem'].forEach(i => $(i).addEventListener('click', fecharFolhas));
+  ['bfile', 'bsave', 'bpdf', 'bpub', 'brem', 'bcron'].forEach(i => $(i).addEventListener('click', fecharFolhas));
   $('qm').oninput = () => { $('q').value = $('qm').value; render(); };
   $('q').addEventListener('input', () => { $('qm').value = $('q').value; });
   $('chips').onclick = e => {
@@ -1208,7 +1225,8 @@ function loadData(d) {
   $('nmw').oninput = () => setNm(+$('nmw').value); $('nmfit').onclick = ajustarNm;
   $('nmwrap').onchange = () => { S.wrap = $('nmwrap').checked; render(); };
   $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
-  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('brem').onclick = remover; $('csel').onchange = () => abrirCron($('csel').value); $('bpdf').onclick = abrirPdf;
+  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('brem').onclick = remover; $('bcron').onclick = abrirLista;
+  $('cronm').onclick = e => { const b = e.target.closest('[data-id]'); if (b) { $('cronm').classList.remove('on'); abrirCron(b.dataset.id); } else if (e.target === $('cronm') || e.target.closest('#cmx')) $('cronm').classList.remove('on'); }; $('csel').onchange = () => abrirCron($('csel').value); $('bpdf').onclick = abrirPdf;
   $('tb').onclick = e => {
     const cx = e.target.closest('.cx'); if (cx) { ocultarCol(cx.closest('th').dataset.c); return; }
     const th = e.target.closest('th[data-sk]');
