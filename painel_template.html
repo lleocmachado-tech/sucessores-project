@@ -115,13 +115,16 @@ aside li:hover{background:var(--g3)}
 aside li small{color:var(--mut);display:block}
 th[data-sk]{cursor:pointer;user-select:none}
 th[data-sk]:hover{filter:brightness(1.25)}
-thead th[data-c]{cursor:grab;padding:0 17px 0 4px}
+thead th[data-c]{padding:0 17px 0 4px}
 thead th.gt{padding:0}
 .cx{position:absolute;right:2px;top:1px;width:15px;height:15px;line-height:15px;text-align:center;font-size:9px;border-radius:50%;opacity:.35;cursor:pointer}
 th:hover .cx{opacity:1;background:rgba(255,255,255,.25)}
 th.alvo-a{box-shadow:inset 3px 0 0 #ffd54f}th.alvo-d{box-shadow:inset -3px 0 0 #ffd54f}
 #cbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 20px 8px}
-#cbar .grp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g1);min-width:52px}
+#ctog{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g1);border:1px solid var(--line);background:#fff;padding:3px 10px;border-radius:14px}
+#ctog small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--mut);margin-left:6px}
+#cbar.shut #cchips,#cbar.shut #crst{display:none}
+#cbar.shut{padding-bottom:4px}
 #cchips{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
 .cc{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--g2);border-radius:14px;background:#fff;color:var(--g1);font-size:12px;cursor:grab;user-select:none}
 .cc b{font-weight:400;font-size:10px;color:var(--mut);cursor:pointer;padding:0 1px}.cc b:hover{color:var(--late)}
@@ -341,7 +344,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
   <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
   <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
 </div>
-<div id="cbar" class="dk"><span class="grp">Colunas</span><span id="cchips"></span><button id="crst" title="Mostrar todas as colunas na ordem original">Restaurar colunas</button></div>
+<div id="cbar" class="dk shut"><button id="ctog" title="Mostrar / recolher o painel de colunas">▸ Colunas</button><span id="cchips"></span><button id="crst" title="Mostrar todas as colunas na ordem original">Restaurar colunas</button></div>
 <details class="how" id="howd"><summary>Como ler os cartões</summary>
   <p><b>Linha de base</b>: datas planejadas originalmente (referência fixa).</p>
   <p><b>Atual</b>: datas vigentes do cronograma. Fica <b style="color:var(--late)">vermelha</b> se passou da linha de base e <b style="color:var(--ok)">verde</b> se está antes.</p>
@@ -542,6 +545,8 @@ function soltarCol(k, alvo, depois) {
 }
 function restaurarCols() { S.ord = COL_PADRAO.slice(); S.hid = new Set(); salvarCols(); render(); }
 function painelCols() {
+  const nOc = S.hid.size, ab = !$('cbar').classList.contains('shut');
+  $('ctog').innerHTML = (ab ? '▾' : '▸') + ' Colunas' + (nOc ? `<small>${nOc} oculta${nOc > 1 ? 's' : ''}</small>` : '');
   $('cchips').innerHTML = S.ord.map(k => S.hid.has(k)
     ? `<span class="cc off" data-c="${k}" data-show="${k}" title="Clique para reexibir">＋ ${nomeCol(k)}</span>`
     : `<span class="cc" draggable="true" data-c="${k}" title="Arraste para reordenar"><b class="cm" data-m="-1" title="Mover para a esquerda">◀</b>${nomeCol(k)}<b class="cm" data-m="1" title="Mover para a direita">▶</b>${COLS[k].fixa ? '' : `<b class="cm" data-x="${k}" title="Ocultar">✕</b>`}</span>`).join('');
@@ -605,8 +610,8 @@ function render(keepScroll = true) {
   STK_W = left;
   const th = k => {
     const c = COLS[k], sticky = stk[k] !== undefined, cx = c.fixa ? '' : '<span class="cx" title="Ocultar esta coluna">✕</span>';
-    if (k === 'gt') return `<th data-c="gt" draggable="true" class="gt" style="padding:0"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:22px;top:6px">?</span>${cx}</th>`;
-    return `<th data-c="${k}" draggable="true" class="${(c.th || '') + (sticky ? ' stk' + (ultimo === k ? ' stl' : '') : '')}"${sticky ? ` style="left:${stk[k]}px"` : ''}${c.sk ? ` data-sk="${c.sk}"` : ''}>${k === 'nm' ? '<span style="float:left">' + c.t + '</span>' : c.t}${c.sk ? seta(c.sk) : ''}<span class="hq" data-h="${c.h}">?</span>${cx}${k === 'nm' ? '<span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span>' : ''}</th>`;
+    if (k === 'gt') return `<th data-c="gt" class="gt" style="padding:0"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:22px;top:6px">?</span>${cx}</th>`;
+    return `<th data-c="${k}" class="${(c.th || '') + (sticky ? ' stk' + (ultimo === k ? ' stl' : '') : '')}"${sticky ? ` style="left:${stk[k]}px"` : ''}${c.sk ? ` data-sk="${c.sk}"` : ''}>${k === 'nm' ? '<span style="float:left">' + c.t + '</span>' : c.t}${c.sk ? seta(c.sk) : ''}<span class="hq" data-h="${c.h}">?</span>${cx}${k === 'nm' ? '<span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span>' : ''}</th>`;
   };
   $('tb').style.width = cols.reduce((a, k) => a + colW(k), 0) + 'px';
   $('tb').className = S.wrap ? 'wrapnm' : '';
@@ -1005,6 +1010,8 @@ function loadData(d) {
   const refresh = () => render();
   $('q').oninput = $('fs').onchange = $('fd').onchange = $('fr').onchange = () => render();
   $('crst').onclick = restaurarCols;
+  try { if (localStorage.getItem('combio_cbar') === '1') $('cbar').classList.remove('shut'); } catch (e) {}
+  $('ctog').onclick = () => { const f = $('cbar').classList.toggle('shut'); try { localStorage.setItem('combio_cbar', f ? '0' : '1'); } catch (e) {} painelCols(); };
   $('sk').onchange = () => { S.sk = $('sk').value; syncSort(); build(); render(); };
   $('sd').onclick = () => { S.sd = -S.sd; syncSort(); build(); render(); };
   syncSort();
