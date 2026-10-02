@@ -236,12 +236,6 @@ body.mob .vzc h2{font-size:18px}
 .dl span{color:var(--mut)}.dl b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 .dl b.late{color:var(--late)}.dl b.early{color:var(--ok)}
 .c5{font-size:12px;color:var(--mut);margin-top:4px}
-.mini{position:relative;height:20px;margin-top:7px;background:#f0f4f1;border-radius:3px;overflow:hidden}
-.mini i{position:absolute;display:block}
-.mini .bl{top:63%;height:19%;background:var(--lb)}
-.mini .cu{top:19%;height:44%;border-radius:2px;min-width:3px;background:var(--g2)}
-.mini .ms{top:calc(41% - 3px);width:7px;height:7px;margin-left:-3px;transform:rotate(45deg);background:var(--g2)}
-.mini .mcut{top:0;bottom:0;width:0;border-left:2px solid var(--late);opacity:.8}
 .mfim{text-align:center;color:var(--mut);font-size:12px;padding:10px}
 /* filtros (folha inferior) */
 body.mob #bk{display:none;position:fixed;inset:0;background:rgba(20,38,28,.45);z-index:110}
@@ -828,13 +822,6 @@ function aplicarModo() {
   S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob); fecharFolhas();
   if (D) render();
 }
-function faixa(t, st) {
-  const span = TMAX - TMIN, p = v => ((v - TMIN) / span * 100).toFixed(2), d = t.d;
-  let h = '';
-  if (d.lbS != null) h += `<i class="bl" style="left:${p(d.lbS)}%;width:${Math.max((d.lbF - d.lbS + 1) / span * 100, .6)}%"></i>`;
-  h += d.s === d.f ? `<i class="ms ${st}" style="left:${p(d.s)}%"></i>` : `<i class="cu ${st}" style="left:${p(d.s)}%;width:${Math.max((d.f - d.s + 1) / span * 100, .6)}%"></i>`;
-  return `<div class="mini" title="Linha do tempo do projeto">${h}<i class="mcut" style="left:${p(S.cut)}%"></i></div>`;
-}
 function cartao(n) {
   const t = T[n.k], st = status(t), ch = chain(n.k), hasK = n.kids.length > 0, open = hasK && (ACT || S.exp.has(n.key));
   const dv = dvF(t), ds = dvS(t), sg = v => (v > 0 ? '+' : '') + v + 'd';
@@ -845,10 +832,9 @@ function cartao(n) {
       <span class="chip"><i class="st ${st}"></i>${ST[st]}</span><span class="chip">${Math.round(t.pc * 100)}%</span>
       ${dv ? `<span class="chip ${dv > 0 ? 'p' : 'n'}">Desvio ${sg(dv)}</span>` : ''}${hasK && !n.dup ? `<span class="chip">↳ ${n.kids.length}</span>` : ''}
       ${n.dup ? `<span class="chip rp" data-f="${n.first}">↩ repetida — ver acima</span>` : ''}</div>
-    <div class="dl"><span>Linha de base</span><b>${fmt(t.lbS)} → ${fmt(t.lbF)}</b></div>
     <div class="dl"><span>Atual</span><b class="${cl(dv).trim()}">${fmt(t.s)} → ${fmt(t.f)}</b></div>
     ${ch.n ? `<div class="c5">Cadeia: ${ch.n} ${ch.n > 1 ? 'sucessoras' : 'sucessora'} · termina em ${fmtN(ch.f)}</div>` : ''}
-    ${faixa(t, st)}</div>`;
+    </div>`;
 }
 function renderMob() {
   if (!D) return;
@@ -907,10 +893,10 @@ function openDrawer(key) {
   $('dr').innerHTML = `<button class="x" id="dx">×</button>
     <h2>${t.id} · ${esc(t.n)}</h2><div style="color:var(--mut);font-size:11.5px">EDT ${esc(t.wbs)}</div><div><span class="st ${st}"></span>${ST[st]} · ${Math.round(t.pc*100)}% concluída${t.sum ? ' · tarefa resumo' : ''}</div>
     <h3>Datas</h3><table><tr><th></th><th>Início</th><th>Término</th><th>Dias corridos</th></tr>
-      <tr><td>Linha de base</td><td>${fmt(t.lbS)}</td><td>${fmt(t.lbF)}</td><td>${dur(t.d.lbS, t.d.lbF)}</td></tr>
+      ${S.mob ? '' : `<tr><td>Linha de base</td><td>${fmt(t.lbS)}</td><td>${fmt(t.lbF)}</td><td>${dur(t.d.lbS, t.d.lbF)}</td></tr>`}
       <tr><td><b>Atual</b></td><td><b>${fmt(t.s)}</b></td><td><b>${fmt(t.f)}</b></td><td>${dur(t.d.s, t.d.f)}</td></tr>
-      <tr><td>Desvio vs LB</td><td class="dv ${dS > 0 ? 'p' : dS < 0 ? 'n' : 'z'}">${sg(dS)}</td><td class="dv ${dF > 0 ? 'p' : dF < 0 ? 'n' : 'z'}">${sg(dF)}</td><td></td></tr></table>
-    <h3>Impacto na rede</h3><div>${ch.n ? `<b>${ch.n}</b> ${ch.n > 1 ? 'sucessoras' : 'sucessora'} no total · cadeia termina em <b>${fmtN(ch.f)}</b>${ch.lf != null ? ` (LB ${fmtN(ch.lf)}, ${sg(ch.f - ch.lf)})` : ''}` : 'Sem sucessoras (fim de cadeia).'}</div>
+      <tr><td>${S.mob ? 'Desvio' : 'Desvio vs LB'}</td><td class="dv ${dS > 0 ? 'p' : dS < 0 ? 'n' : 'z'}">${sg(dS)}</td><td class="dv ${dF > 0 ? 'p' : dF < 0 ? 'n' : 'z'}">${sg(dF)}</td><td></td></tr></table>
+    <h3>Impacto na rede</h3><div>${ch.n ? `<b>${ch.n}</b> ${ch.n > 1 ? 'sucessoras' : 'sucessora'} no total · cadeia termina em <b>${fmtN(ch.f)}</b>${ch.lf != null && !S.mob ? ` (LB ${fmtN(ch.lf)}, ${sg(ch.f - ch.lf)})` : ''}` : 'Sem sucessoras (fim de cadeia).'}</div>
     <h3>Predecessoras (${t.pr.length})</h3>${li(t.pr)}
     <h3>Sucessoras diretas (${t.su.length})</h3>${li(t.su)}`;
   $('dr').classList.add('open');
