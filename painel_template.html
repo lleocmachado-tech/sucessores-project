@@ -44,7 +44,9 @@ body.gating #gate{display:flex}
 #gform h2{margin:0;color:var(--g1);font-size:17px}#gform p{margin:0;color:var(--mut);font-size:13px}
 #gform input{font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:5px}
 #gerr{color:#b3261e;font-size:12.5px;min-height:16px}
-#bpub{display:none}body.adm #bpub{display:inline-block}
+#bpub,#brem{display:none}body.adm #bpub,body.adm.tem #brem{display:inline-block}
+#csel{display:none;margin-top:5px;max-width:100%;font:inherit;font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:5px;padding:3px 6px}
+#csel option{color:#14261c;background:#fff}body.multi #csel{display:block}
 button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
 button:hover{background:var(--g3)}
 button.pri{background:var(--g1);color:#fff;border-color:var(--g1)}button.pri:hover{background:#0a7a3a}
@@ -288,10 +290,11 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
 <body>
 <header>
   <img src="__LOGO__" alt="Combio">
-  <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div></div>
+  <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div><select id="csel" aria-label="Cronograma"></select></div>
   <div class="acts">
     <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
     <button id="bpub" title="Publicar este cronograma no painel online (GitHub Pages)">Publicar online</button>
+    <button id="brem" title="Apagar este cronograma do painel online">Remover do online</button>
     <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
     <button id="bpdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">Relatório PDF</button>
   </div>
@@ -804,9 +807,10 @@ function salvarHtml() {
   download(new Blob(['<!DOCTYPE html>\n' + c.outerHTML], {type: 'text/html;charset=utf-8'}), nome);
 }
 
-/* ---------- painel online (GitHub Pages): dados.json cifrado com a senha ---------- */
-const REPO = 'lleocmachado-tech/sucessores-project', ARQ = 'dados.json';
-let ENV = null, PW = null;                                                   // ENV = texto do dados.json em uso
+/* ---------- painel online (GitHub Pages): dados/indice.json + dados/<id>.json, cifrados com a senha ---------- */
+const REPO = 'lleocmachado-tech/sucessores-project', IDXF = 'dados/indice.json', cronF = id => `dados/${id}.json`;
+let ENV = null, ENVI = null, IDX = [], CUR = null, PW = null;               // ENV/ENVI = texto dos arquivos em uso; IDX = lista de cronogramas
+const ADM = /[#&]admin(&|$)/.test(location.hash), hashC = () => (location.hash.match(/[#&]c=([^&]*)/) || [])[1];
 const u8b64 = u => { let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode(...u.subarray(i, i + 8192)); return btoa(s); };
 const b64u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const gzip = async (u, dir) => new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new (dir ? CompressionStream : DecompressionStream)('gzip'))).arrayBuffer());
@@ -823,44 +827,100 @@ async function decifrar(env, pw) {
   const e = JSON.parse(env), pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: b64u8(e.iv)}, await chaveAes(pw, b64u8(e.salt)), b64u8(e.ct));
   return JSON.parse(new TextDecoder().decode(await gzip(new Uint8Array(pt), false)));
 }
-async function buscarOnline() {
+async function buscarOnline(arq) {
   if (!/^https?:$/.test(location.protocol)) return null;                    // aberto como arquivo: só modo local
-  try { const r = await fetch(ARQ + '?t=' + Date.now(), {cache: 'no-store'}); if (!r.ok) return null; const t = await r.text(); JSON.parse(t); return t; } catch (e) { return null; }
+  try { const r = await fetch(arq + '?t=' + Date.now(), {cache: 'no-store'}); if (!r.ok) return null; const t = await r.text(); JSON.parse(t); return t; } catch (e) { return null; }
+}
+const slug = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function listaCron() {                                                       // seletor no cabeçalho
+  const sel = $('csel'); sel.innerHTML = IDX.map(c => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join(''); if (CUR) sel.value = CUR;
+  document.body.classList.toggle('multi', IDX.length > 1 || (ADM && IDX.length > 0)); document.body.classList.toggle('tem', !!CUR && IDX.some(c => c.id === CUR));
+}
+async function abrirCron(id) {
+  const c = IDX.find(x => x.id === id) || IDX[0];
+  if (!c) { CUR = null; listaCron(); return; }
+  busy('Carregando ' + c.nome + ' …'); const t = await buscarOnline(cronF(c.id));
+  try { if (!t) throw new Error('arquivo não encontrado (acabou de ser publicado? aguarde 1 minuto).'); const d = await decifrar(t, PW); ENV = t; CUR = c.id; loadData(d); }
+  catch (e) { alert('Não foi possível abrir "' + c.nome + '".\n' + e.message); }
+  busy('');
+  try { localStorage.setItem('combio_cur', CUR || ''); } catch (e) {}
+  history.replaceState(null, '', location.pathname + location.search + (ADM ? '#admin&c=' : '#c=') + CUR); listaCron();
 }
 async function destravar(pw) {
-  try { const d = await decifrar(ENV, pw); PW = pw; try { localStorage.setItem('combio_pw', pw); } catch (e) {} document.body.classList.remove('gating'); loadData(d); return true; }
-  catch (e) { return false; }
+  let d;
+  try { if (ENVI) IDX = await decifrar(ENVI, pw); else d = await decifrar(ENV, pw); } catch (e) { return false; }
+  PW = pw; try { localStorage.setItem('combio_pw', pw); } catch (e) {} document.body.classList.remove('gating');
+  if (!ENVI) { loadData(d); return true; }                                   // formato antigo: dados.json único
+  let ult = ''; try { ult = localStorage.getItem('combio_cur') || ''; } catch (e) {}
+  await abrirCron(hashC() || ult); return true;
 }
 async function abrirOnline() {
-  busy('Carregando cronograma …'); ENV = await buscarOnline(); busy('');
-  if (!ENV) return;
+  busy('Carregando cronograma …'); ENVI = await buscarOnline(IDXF); if (!ENVI) ENV = await buscarOnline('dados.json'); busy('');
+  if (!ENVI && !ENV) return;
   let pw = ''; try { pw = localStorage.getItem('combio_pw') || ''; } catch (e) {}
   if (pw && await destravar(pw)) return;
   document.body.classList.add('gating'); $('gpw').focus();
 }
 async function atualizarOnline() {                                           // visitante: recarrega se publicaram versão nova
-  if (!ENV || !PW || document.hidden || document.body.classList.contains('adm')) return;
-  const t = await buscarOnline(); if (!t || t === ENV) return;
+  if (!PW || document.hidden || ADM || !ENVI) return;
+  const ti = await buscarOnline(IDXF);
+  if (ti && ti !== ENVI) { try { IDX = await decifrar(ti, PW); ENVI = ti; listaCron(); } catch (e) {} }
+  const t = CUR && await buscarOnline(cronF(CUR)); if (!t || t === ENV) return;
   try { const d = await decifrar(t, PW); ENV = t; loadData(d); } catch (e) {}
 }
-async function publicar() {
+const GH = 'https://api.github.com/repos/' + REPO + '/contents/';
+const ghH = tk => ({Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json'});
+async function ghGet(tk, arq) {
+  const r = await fetch(GH + arq + '?ref=main', {headers: ghH(tk), cache: 'no-store'});
+  if (r.status === 404) return null;
+  if (!r.ok) throw await ghErro(r, tk);
+  const j = await r.json(); return {sha: j.sha, txt: j.content ? new TextDecoder().decode(b64u8(j.content.replace(/\n/g, ''))) : ''};
+}
+async function ghErro(r, tk) {
+  if ([401, 403].includes(r.status)) try { localStorage.removeItem('combio_gh'); } catch (e) {}
+  return new Error('GitHub respondeu ' + r.status + ' (' + ((await r.json().catch(() => ({}))).message || 'sem detalhe') + '). Confira o token e tente de novo.');
+}
+async function ghPut(tk, arq, txt, sha, msg) {
+  const r = await fetch(GH + arq, {method: 'PUT', headers: ghH(tk), body: JSON.stringify({message: msg, content: u8b64(new TextEncoder().encode(txt)), sha, branch: 'main'})});
+  if (!r.ok) throw await ghErro(r, tk);
+}
+async function tokenSenha() {
   let tk = ''; try { tk = localStorage.getItem('combio_gh') || ''; } catch (e) {}
   if (!tk) tk = (prompt('Cole o token do GitHub (fine-grained, só este repositório, permissão Contents: Read and write). Fica guardado só neste navegador.') || '').trim();
   const pw = PW || prompt('Senha do painel (a que os visitantes vão digitar):');
-  if (!tk || !pw) return;
+  return tk && pw ? {tk, pw} : null;
+}
+async function indiceAtual(tk, pw) {                                         // índice vigente direto do GitHub (o Pages pode estar defasado)
+  const g = await ghGet(tk, IDXF); if (!g) return {sha: undefined, lista: []};
+  try { return {sha: g.sha, lista: await decifrar(g.txt, pw)}; } catch (e) { throw new Error('A senha informada é diferente da usada nas publicações anteriores.'); }
+}
+async function publicar() {
+  const a = await tokenSenha(); if (!a) return;
+  const nome = D.titulo || D.projeto, def = (CUR && IDX.some(c => c.id === CUR)) ? CUR : slug(nome);
+  const id = slug(prompt('Nome do cronograma online (só letras, números e hífen).\nNome já existente = atualiza; nome novo = adiciona.' + (IDX.length ? '\nJá publicados: ' + IDX.map(c => c.id).join(', ') : ''), def) || '');
+  if (!id) return;
   busy('Publicando …'); await new Promise(r => setTimeout(r, 30));
   try {
-    const H = {Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json'}, u = `https://api.github.com/repos/${REPO}/contents/${ARQ}`;
-    const g = await fetch(u + '?ref=main', {headers: H, cache: 'no-store'});
-    const sha = g.ok ? (await g.json()).sha : undefined;
-    const p = await fetch(u, {method: 'PUT', headers: H, body: JSON.stringify({message: 'chore(dados): atualiza cronograma ' + D.arquivo, content: u8b64(new TextEncoder().encode(await cifrar(dadosJson(), pw))), sha, branch: 'main'})});
-    if (!p.ok) {
-      if (p.status === 401 || p.status === 403 || p.status === 404) try { localStorage.removeItem('combio_gh'); } catch (e) {}
-      throw new Error('GitHub respondeu ' + p.status + ' (' + ((await p.json().catch(() => ({}))).message || 'sem detalhe') + '). Confira o token e tente de novo.');
-    }
+    const {tk, pw} = a, msg = 'chore(dados): atualiza cronograma ' + id, ix = await indiceAtual(tk, pw);
+    await ghPut(tk, cronF(id), await cifrar(dadosJson(), pw), (await ghGet(tk, cronF(id)))?.sha, msg);
+    const lista = ix.lista.filter(c => c.id !== id); lista.unshift({id, nome, arquivo: D.arquivo, em: new Date().toISOString()});
+    await ghPut(tk, IDXF, await cifrar(JSON.stringify(lista), pw), ix.sha, 'chore(dados): atualiza índice de cronogramas');
     try { localStorage.setItem('combio_gh', tk); localStorage.setItem('combio_pw', pw); } catch (e) {}
-    PW = pw; alert('Publicado! Quem abrir o painel online vê a nova versão em cerca de 1 minuto.');
+    PW = pw; IDX = lista; CUR = id; listaCron();
+    alert('Publicado como "' + id + '"! Quem abrir o painel online vê a nova versão em cerca de 1 minuto.\nLink direto: ' + location.origin + location.pathname + '#c=' + id);
   } catch (e) { alert('Não foi possível publicar.\n' + e.message); }
+  busy('');
+}
+async function remover() {
+  const c = IDX.find(x => x.id === CUR); if (!c || !confirm('Remover "' + c.nome + '" do painel online? Os visitantes deixam de vê-lo.')) return;
+  const a = await tokenSenha(); if (!a) return;
+  busy('Removendo …'); await new Promise(r => setTimeout(r, 30));
+  try {
+    const {tk, pw} = a, ix = await indiceAtual(tk, pw), g = await ghGet(tk, cronF(c.id)), lista = ix.lista.filter(x => x.id !== c.id);
+    await ghPut(tk, IDXF, await cifrar(JSON.stringify(lista), pw), ix.sha, 'chore(dados): remove ' + c.id + ' do índice');
+    if (g) { const r = await fetch(GH + cronF(c.id), {method: 'DELETE', headers: ghH(tk), body: JSON.stringify({message: 'chore(dados): remove cronograma ' + c.id, sha: g.sha, branch: 'main'})}); if (!r.ok) throw await ghErro(r, tk); }
+    PW = pw; IDX = lista; CUR = null; listaCron(); alert('Removido. Os visitantes deixam de ver "' + c.nome + '" em cerca de 1 minuto.');
+  } catch (e) { alert('Não foi possível remover.\n' + e.message); }
   busy('');
 }
 
@@ -1101,7 +1161,7 @@ function loadData(d) {
     else if (e.key === 'Escape') { mostrarTitulo(); $('ttl').blur(); }          // descarta a edição
   });
   S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob);
-  if (location.hash === '#admin') document.body.classList.add('adm');
+  if (ADM) document.body.classList.add('adm');
   D ? loadData(D) : (vazio(), abrirOnline());
   $('gform').onsubmit = async e => { e.preventDefault(); if (await destravar($('gpw').value)) $('gerr').textContent = ''; else { $('gerr').textContent = 'Senha incorreta.'; $('gpw').select(); } };
   document.addEventListener('visibilitychange', atualizarOnline); setInterval(atualizarOnline, 300000);
@@ -1125,7 +1185,7 @@ function loadData(d) {
   addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
   $('bfil').onclick = () => document.body.classList.add('filopen'); $('fx').onclick = $('bk').onclick = fecharFolhas;
   $('bmenu').onclick = () => document.body.classList.toggle('menuopen');
-  ['bfile', 'bsave', 'bpdf', 'bpub'].forEach(i => $(i).addEventListener('click', fecharFolhas));
+  ['bfile', 'bsave', 'bpdf', 'bpub', 'brem'].forEach(i => $(i).addEventListener('click', fecharFolhas));
   $('qm').oninput = () => { $('q').value = $('qm').value; render(); };
   $('q').addEventListener('input', () => { $('qm').value = $('q').value; });
   $('chips').onclick = e => {
@@ -1148,7 +1208,7 @@ function loadData(d) {
   $('nmw').oninput = () => setNm(+$('nmw').value); $('nmfit').onclick = ajustarNm;
   $('nmwrap').onchange = () => { S.wrap = $('nmwrap').checked; render(); };
   $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
-  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('bpdf').onclick = abrirPdf;
+  $('bsave').onclick = salvarHtml; $('bpub').onclick = publicar; $('brem').onclick = remover; $('csel').onchange = () => abrirCron($('csel').value); $('bpdf').onclick = abrirPdf;
   $('tb').onclick = e => {
     const cx = e.target.closest('.cx'); if (cx) { ocultarCol(cx.closest('th').dataset.c); return; }
     const th = e.target.closest('th[data-sk]');

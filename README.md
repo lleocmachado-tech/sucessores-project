@@ -14,7 +14,9 @@ O botão **Salvar HTML** gera uma cópia autônoma com os dados carregados (úti
 O leitor foi validado campo a campo contra o mpxj em vários `.mpp` (datas, linha de base, % e vínculos). Arquivos `.mpp` não são versionados (dados do cliente).
 
 ## Painel online (GitHub Pages)
-- Página: `index.html` (cópia do painel em branco, gerada por `python gerar_painel.py`). Os dados ficam em `dados.json`, **cifrado** (AES-GCM, chave derivada da senha); sem a senha o arquivo é ilegível.
-- Visitante: abre o link, digita a senha e vê o último cronograma publicado. A página confere se há versão nova ao voltar para a aba e a cada 5 min.
-- Admin: abra `<link>/#admin`, carregue o `.mpp` e clique em **Publicar online** (pede token do GitHub fine-grained, só este repo, *Contents: Read and write*; fica no navegador). O botão grava `dados.json` no repositório; o Pages atualiza em ~1 min, sem deploy manual.
+- Página: `index.html` (cópia do painel em branco, gerada por `python gerar_painel.py`). Os dados ficam em `dados/`: um `<nome>.json` por cronograma mais `dados/indice.json` (lista). Tudo **cifrado** (AES-GCM, chave derivada da senha única); sem a senha os arquivos são ilegíveis.
+- Visitante: abre o link, digita a senha e escolhe o cronograma no seletor do cabeçalho. Link direto: `<link>/#c=<nome>`. A página confere se há versão nova ao voltar para a aba e a cada 5 min.
+- Admin: abra `<link>/#admin`, carregue o `.mpp` e clique em **Publicar online** (informe o nome: existente atualiza, novo adiciona). **Remover do online** apaga o cronograma selecionado. Pede token do GitHub fine-grained, só este repo, *Contents: Read and write*; fica no navegador.
+- O Pages atualiza em ~1 min após cada publicação, sem deploy manual.
 - Ativar uma vez: GitHub → Settings → Pages → Branch `main` / pasta `/ (root)`.
+- Formato antigo (`dados.json` único na raiz) ainda abre se não houver `dados/indice.json`.
