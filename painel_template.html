@@ -20,6 +20,11 @@ header{background:linear-gradient(90deg,var(--g1),#0a7a3a);color:#fff;display:fl
 header img{height:38px;display:block}
 header .tt{border-left:1px solid rgba(255,255,255,.35);padding-left:20px;flex:1 1 280px;min-width:0}
 header h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
+#ttl{outline:none;border-radius:4px;padding:1px 6px;margin-left:-6px;cursor:text;transition:background .15s}
+#ttl[contenteditable]:hover{background:rgba(255,255,255,.12)}
+#ttl[contenteditable]:hover::after{content:"✎";font-size:12px;opacity:.7;margin-left:8px}
+#ttl[contenteditable]:focus{background:rgba(255,255,255,.2);box-shadow:0 0 0 1px rgba(255,255,255,.55)}
+#ttl[contenteditable]:focus::after{content:none}
 header .sub{font-size:11.5px;opacity:.85;margin-top:2px}
 header .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 header .acts button{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.55)}
@@ -282,7 +287,7 @@ body.mob #ldg{font-size:14px;padding:20px;text-align:center}
 <body>
 <header>
   <img src="__LOGO__" alt="Combio">
-  <div class="tt"><h1 id="ttl"></h1><div class="sub" id="sub"></div></div>
+  <div class="tt"><h1 id="ttl" spellcheck="false" title="Clique para editar o título"></h1><div class="sub" id="sub"></div></div>
   <div class="acts">
     <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
     <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
@@ -788,7 +793,7 @@ async function lerArquivo(f) {
 }
 const trocarArquivo = () => $('fin').click();
 function vazio() {
-  document.body.classList.add('vazio'); $('ttl').textContent = 'Painel de Sucessoras'; $('sub').textContent = 'Nenhum cronograma carregado'; $('gen').innerHTML = '';
+  document.body.classList.add('vazio'); $('ttl').removeAttribute('contenteditable'); $('ttl').textContent = 'Painel de Sucessoras'; $('sub').textContent = 'Nenhum cronograma carregado'; $('gen').innerHTML = '';
   $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = true;
   $('vzh').innerHTML = S.mob ? 'Escolha o <b>.mpp</b> (ou <b>.xml</b>) do MS Project que está no aparelho, ou abra um <b>HTML salvo</b> pelo computador (botão <b>Salvar HTML</b>).' : 'Aceita o arquivo <b>.mpp</b> do MS Project (2010 ou mais novo) ou o <b>.xml</b> exportado por ele. A leitura é feita aqui mesmo, no navegador; nada é enviado a lugar nenhum.';
 }
@@ -999,12 +1004,26 @@ const TIPS = {
 })();
 
 /* ---------- init ---------- */
+const tituloPadrao = () => 'Painel de Sucessoras · ' + D.projeto.trim();
+function mostrarTitulo() {
+  const h = $('ttl'), t = D.titulo || tituloPadrao();
+  h.textContent = t; document.title = 'Combio · ' + t;
+  h.contentEditable = 'plaintext-only'; if (h.contentEditable !== 'plaintext-only') h.contentEditable = 'true';
+}
+function gravarTitulo() {
+  if (!D) return;
+  const h = $('ttl'), v = h.textContent.replace(/\s+/g, ' ').trim(), chave = 'combio_tit:' + D.arquivo;
+  if (!v || v === tituloPadrao()) { delete D.titulo; try { localStorage.removeItem(chave); } catch (e) {} }
+  else { D.titulo = v; try { localStorage.setItem(chave, v); } catch (e) {} }
+  mostrarTitulo();
+}
 function loadData(d) {
   const old = T && $('fp').value && T[$('fp').value] ? T[$('fp').value] : null;
   D = d; T = D.tasks; prep(); mkKids(); chainMemo = {};
   S.cut = dn(D.dataStatus) ?? S.cut; $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
   document.body.classList.remove('vazio'); $('bfile').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = false;
-  $('ttl').textContent = 'Painel de Sucessoras · ' + D.projeto.trim();
+  try { if (!D.titulo) D.titulo = localStorage.getItem('combio_tit:' + D.arquivo) || undefined; } catch (e) {}   // título editado volta ao reabrir o mesmo arquivo
+  mostrarTitulo();
   $('sub').textContent = `${D.arquivo} · Rev. ${D.revisao}${D.salvoEm ? ' · salvo em ' + fmt(D.salvoEm) : ''}${D.dataStatus ? ' · data de status do cronograma ' + fmt(D.dataStatus) : ''}`;
   $('gen').innerHTML = 'Painel gerado em<br>' + D.geradoEm;
   let a = 1e9, b = -1e9;
@@ -1021,6 +1040,11 @@ function loadData(d) {
   $('fm').onchange = setRoots;
   $('fp').onchange = () => { $('fm').value = (KIDS[$('fp').value] || []).every(c => T[c].sum) ? 'l' : 'd'; setRoots(); }; // filhos só-resumo: abre direto nas tarefas de detalhe
   $('vzb').onclick = trocarArquivo;
+  $('ttl').addEventListener('blur', gravarTitulo);
+  $('ttl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); $('ttl').blur(); }
+    else if (e.key === 'Escape') { mostrarTitulo(); $('ttl').blur(); }          // descarta a edição
+  });
   S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob);
   D ? loadData(D) : vazio();
 
