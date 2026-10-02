@@ -1,0 +1,11 @@
+# dados do cliente e arquivos gerados fora do painel
+*.mpp
+*.xlsx
+~$*
+# leitor Java usado só para validar o leitor JS
+.work/
+# cópia duplicada do logo
+*- Copia.png
+# temporários
+*.log
+__pycache__/

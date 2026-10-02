@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#02642e">
+<title>Combio · Painel de Sucessoras</title>
+<style>
+:root{
+  --g1:#02642e; --g2:#3d9036; --g3:#e8f3e6; --g4:#f4f9f3;
+  --ink:#1c2a22; --mut:#667a6f; --line:#dbe5de; --bg:#f2f5f3; --card:#fff;
+  --ok:#02642e; --run:#3d9036; --late:#c0392b; --fut:#7f93a8; --amb:#d98a00;
+  --lb:#8c9a92; --real:#0b3d5c;
+  --rowh:32px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:13px/1.35 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;overflow:auto}
+header{background:linear-gradient(90deg,var(--g1),#0a7a3a);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:10px 20px;flex:none}
+header img{height:38px;display:block}
+header .tt{border-left:1px solid rgba(255,255,255,.35);padding-left:20px;flex:1 1 280px;min-width:0}
+header h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
+header .sub{font-size:11.5px;opacity:.85;margin-top:2px}
+header .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+header .acts button{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.55)}
+header .acts button:hover{background:rgba(255,255,255,.28)}
+header .acts button.off{opacity:.55}
+@media(max-width:1180px){header .right{display:none}}
+@media(max-width:700px){header .tt{border-left:0;padding-left:0;flex-basis:100%}header img{height:30px}}
+header .right{margin-left:20px;text-align:right;font-size:11.5px;opacity:.85}
+.tools{padding:7px 20px 0;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;flex:none}
+.tools .grp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g1);min-width:52px}
+.tools label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mut);white-space:nowrap}
+.tools input[type=text],.tools input[type=date],.tools select{font:inherit;padding:4px 7px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
+.tools input[type=text]{width:210px}
+button{font:inherit;border:1px solid var(--g2);background:#fff;color:var(--g1);border-radius:5px;padding:4px 10px;cursor:pointer}
+button:hover{background:var(--g3)}
+button.pri{background:var(--g1);color:#fff;border-color:var(--g1)}button.pri:hover{background:#0a7a3a}
+.sep{width:1px;height:20px;background:var(--line)}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:8px 20px;font-size:11.5px;color:var(--mut);flex:none}
+.legend i{display:inline-block;vertical-align:middle;margin-right:4px}
+.sw{width:18px;height:9px;border-radius:2px}
+.dm{width:9px;height:9px;transform:rotate(45deg);background:var(--g1)}
+main{flex:1 0 440px;position:relative;margin:0 20px 14px;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.wrap{position:absolute;inset:0;overflow:auto}
+table{border-collapse:separate;border-spacing:0;table-layout:fixed}
+th,td{padding:0 6px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+thead th{position:sticky;background:var(--g1);color:#fff;font-weight:600;font-size:11.5px;text-align:center;z-index:5;border-bottom:1px solid rgba(255,255,255,.25);border-right:1px solid rgba(255,255,255,.18)}
+thead tr.h1 th{top:0;height:28px}
+thead tr.h2 th{top:28px;height:28px;font-weight:500}
+thead th.gLB{background:#5d6f65}thead th.gRE{background:#0b3d5c}thead th.gAT{background:var(--g1)}
+td{height:var(--rowh);font-size:12.5px}
+td.d{text-align:center;font-variant-numeric:tabular-nums}
+td.lb{color:var(--lb)}td.re{color:var(--real);font-weight:600;background:#f1f6fa}td.at{background:var(--g4)}
+td.late{color:var(--late);font-weight:600}td.early{color:var(--ok);font-weight:600}
+.sticky1{position:sticky;left:0;z-index:3;background:#fff}
+.sticky2{position:sticky;left:var(--idw);z-index:3;background:#fff;border-right:2px solid var(--line)}
+thead .sticky1,thead .sticky2{z-index:7;background:var(--g1)}
+tr:hover td{background:#eef6ec}tr:hover td.sticky1,tr:hover td.sticky2{background:#eef6ec}
+tr.sel td{background:#dff0da!important}
+tr.root td{font-weight:600;background:var(--g3)}tr.root td.sticky1,tr.root td.sticky2{background:var(--g3)}
+tr.ctx td.nm{opacity:.55}
+tr.dup td.nm{font-style:italic;color:var(--mut)}
+tr.flash td{animation:fl 1.6s}
+@keyframes fl{0%,60%{background:#ffe9a8}100%{}}
+td.nm{cursor:default}
+.tg{display:inline-block;width:18px;text-align:center;cursor:pointer;color:var(--g1);font-size:11px;user-select:none}
+.tg.none{cursor:default;color:transparent}
+.nmt{vertical-align:middle}
+.sumt{font-weight:700}
+.badge{display:inline-block;padding:0 6px;border-radius:9px;font-size:10.5px;line-height:16px;margin-left:6px;background:var(--g3);color:var(--g1);vertical-align:middle}
+.badge.dup{background:#fff2cf;color:#8a5a00;cursor:pointer}
+.rel{font-size:11px;color:var(--mut);text-align:center}
+.dv{font-weight:700;text-align:center}.dv.p{color:var(--late)}.dv.n{color:var(--ok)}.dv.z{color:var(--mut);font-weight:400}
+.pc{text-align:center;color:var(--mut)}
+.ch{font-size:11.5px;color:var(--mut);text-align:center}
+.st{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.st.ok{background:var(--ok)}.st.run{background:var(--run)}.st.late{background:var(--late)}.st.fut{background:var(--fut)}
+td.g{position:relative;padding:0;overflow:visible}
+.gh{position:relative;height:56px;overflow:hidden}
+.gh .yr,.gh .mo{position:absolute;font-size:10.5px;white-space:nowrap}
+.gh .yr{top:3px;font-weight:700;border-left:1px solid rgba(255,255,255,.5);padding-left:4px}
+.gh .mo{top:31px;border-left:1px solid rgba(255,255,255,.25);padding-left:3px;opacity:.9}
+.bar{position:absolute;border-radius:2px}
+.bar.bl{top:24px;height:4px;background:var(--lb);opacity:.85}
+.bar.ac{top:3px;height:5px;background:var(--real)}
+.bar.cu{top:10px;height:12px}
+.bar.cu.ok{background:var(--ok)}.bar.cu.run{background:#a9d3a4}.bar.cu.late{background:#e7a69e}.bar.cu.fut{background:#b7c4d1}
+.bar .pg{position:absolute;left:0;top:0;bottom:0;border-radius:2px}
+.bar.cu.run .pg{background:var(--run)}.bar.cu.late .pg{background:var(--late)}.bar.cu.fut .pg{background:var(--fut)}
+.ms{position:absolute;top:10px;width:12px;height:12px;transform:rotate(45deg);margin-left:-6px}
+.ms.ok{background:var(--ok)}.ms.run{background:var(--run)}.ms.late{background:var(--late)}.ms.fut{background:var(--fut)}
+.lab{position:absolute;top:9px;font-size:10.5px;color:var(--ink);white-space:nowrap;line-height:14px}
+.lab .l{color:var(--lb)}
+#ov{position:absolute;pointer-events:none;z-index:2}
+#ov .ml{position:absolute;top:0;bottom:0;width:1px;background:#e8eee9}
+#ov .ml.y{background:#c8d4cc}
+#ov .cut{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--late)}
+#ov .cut span{position:absolute;top:2px;left:4px;background:var(--late);color:#fff;font-size:10px;padding:0 4px;border-radius:3px;white-space:nowrap}
+aside{position:absolute;right:0;top:0;bottom:0;width:410px;background:#fff;border-left:2px solid var(--g1);box-shadow:-6px 0 18px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .2s;z-index:20;overflow:auto;padding:14px 16px}
+aside.open{transform:none}
+aside h2{font-size:15px;margin:0 28px 4px 0;color:var(--g1)}
+aside .x{position:absolute;right:10px;top:8px;border:0;font-size:20px;background:none;color:var(--mut)}
+aside h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin:14px 0 5px;border-bottom:1px solid var(--line);padding-bottom:3px}
+aside table{width:100%;table-layout:auto}
+aside td,aside th{height:auto;padding:4px 6px;font-size:12px;text-align:center;border-bottom:1px solid var(--line);white-space:normal}
+aside th{background:none;color:var(--mut);font-weight:600;position:static}
+aside td:first-child,aside th:first-child{text-align:left}
+aside ul{list-style:none;margin:0;padding:0}
+aside li{padding:5px 6px;border-bottom:1px solid var(--line);cursor:pointer;font-size:12px}
+aside li:hover{background:var(--g3)}
+aside li small{color:var(--mut);display:block}
+th[data-sk]{cursor:pointer;user-select:none}
+th[data-sk]:hover{filter:brightness(1.25)}
+.sa{font-size:9px;margin-left:4px;opacity:.95}
+.rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;z-index:8}
+.rz:hover,.rz.on{background:rgba(255,255,255,.4)}
+.wrapnm td.nm{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25;padding-top:4px;padding-bottom:4px}
+.hide-lb .c-lb,.hide-re .c-re,.hide-at .c-at,.hide-ch .c-ch,.hide-rel .c-rel{display:none}
+.hq{display:inline-block;width:14px;height:14px;line-height:12px;margin-left:5px;border:1px solid rgba(255,255,255,.55);border-radius:50%;font-size:9px;font-weight:600;text-align:center;opacity:.55;cursor:help;vertical-align:middle}
+.hq:hover,.hq.on{opacity:1;background:rgba(255,255,255,.2)}
+#tip{position:fixed;z-index:100;max-width:340px;background:#14261c;color:#fff;font-size:12px;line-height:1.45;padding:9px 12px;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;pointer-events:none}
+#tip b{color:#9fd69a}#tip i{color:#c9d6ce;font-style:normal}#tip hr{border:0;border-top:1px solid rgba(255,255,255,.2);margin:6px 0}
+#ldg{position:fixed;inset:0;background:rgba(20,38,28,.55);z-index:200;display:none;align-items:center;justify-content:center;color:#fff;font-size:15px}
+#ldg.on{display:flex}
+#pdfm{position:fixed;inset:0;background:rgba(20,38,28,.5);z-index:150;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 16px}
+#pdfm.on{display:flex}
+.mdl{background:#fff;border-radius:8px;width:860px;max-width:100%;box-shadow:0 10px 40px rgba(0,0,0,.35);overflow:hidden}
+.mdl .mh{background:var(--g1);color:#fff;padding:12px 18px;font-size:15px;font-weight:600}
+.mdl .mb{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0 22px;padding:14px 18px}
+@media(max-width:760px){.mdl .mb{grid-template-columns:minmax(0,1fr)}}
+.mdl h4{margin:12px 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--g1);border-bottom:1px solid var(--line);padding-bottom:3px}
+.mdl h4:first-child{margin-top:0}
+.mdl label{color:var(--ink);display:flex;align-items:center;gap:6px;margin:3px 0;font-size:12.5px}
+.mdl small{color:var(--mut)}
+.mdl .pl{border:1px solid var(--line);border-radius:5px;max-height:300px;overflow:auto;margin-top:6px}
+.mdl .pl label{padding:3px 8px;margin:0;border-bottom:1px solid #eef2ef}
+.mdl .pl label:hover{background:var(--g4)}
+.mdl .pl label span.i{color:var(--mut);min-width:34px}
+.mdl .tl{display:flex;gap:6px;align-items:center;margin-top:6px}
+.mdl input[type=text],.mdl select{font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:5px}
+.mdl .mf{display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid var(--line);background:#f7faf8}
+.mdl .mf .inf{margin-right:auto;color:var(--mut);font-size:12px}
+#vz{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:20px;text-align:center;background:linear-gradient(180deg,#fff,var(--g4))}
+body.vazio #vz{display:flex}
+body.vazio .tools,body.vazio .legend,body.vazio .wrap{display:none}
+body.dragging main{outline:3px dashed var(--g2);outline-offset:-8px}
+.vzc{max-width:520px}.vzc h2{margin:0 0 8px;font-size:20px;color:var(--g1);font-weight:600}
+.vzc p{margin:0 0 18px;color:var(--mut);font-size:13.5px;line-height:1.5}
+button.big{font-size:15px;padding:10px 26px}
+.vzc .drop{margin:18px auto;padding:22px;border:2px dashed var(--line);border-radius:8px;color:var(--mut);font-size:13px}
+.vzc .hint{font-size:12px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.empty{padding:40px;text-align:center;color:var(--mut)}
+
+/* ===================== MOBILE (body.mob) ===================== */
+html{-webkit-text-size-adjust:100%}
+button,select,input{touch-action:manipulation}
+.mbar,#bk,.fh,#bmenu,.how{display:none}
+#mv{display:none}
+body.mob{height:100vh;height:100dvh;overflow:hidden;font-size:14px}
+body.mob header{position:relative;flex-wrap:nowrap;padding:8px 12px;gap:10px}
+body.mob header img{height:24px}
+body.mob header .tt{border-left:0;padding-left:0;flex:1 1 0;min-width:0}
+body.mob header h1{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.mob header .sub{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.mob header .right{display:none}
+body.mob #bmenu{display:block;flex:none;width:42px;height:40px;padding:0;font-size:22px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.55)}
+body.mob header .acts{display:none;position:absolute;right:10px;top:calc(100% + 4px);z-index:130;margin:0;width:240px;flex-direction:column;gap:2px;background:#fff;border-radius:10px;padding:6px;box-shadow:0 8px 26px rgba(0,0,0,.3)}
+body.mob.menuopen header .acts{display:flex}
+body.mob header .acts button{background:#fff;color:var(--g1);border-color:var(--line);text-align:left;padding:13px 12px;font-size:14.5px}
+body.mob header .acts button.off{opacity:1}
+body.mob .mbar{display:block;flex:none;background:#fff;border-bottom:1px solid var(--line);padding:8px 10px 6px}
+body.mob .mrow{display:flex;gap:8px}
+body.mob #qm{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;-webkit-appearance:none;appearance:none}
+body.mob #bfil{flex:none;padding:0 14px;font-size:14px;min-height:42px}
+body.mob #fcnt:not(:empty){margin-left:6px;background:#fff;color:var(--g1);border-radius:9px;padding:0 6px;font-size:12px}
+body.mob .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+body.mob .chips::-webkit-scrollbar{display:none}
+body.mob .chips button{flex:none;border-radius:16px;padding:7px 13px;font-size:13px;white-space:nowrap;border-color:var(--line);color:var(--ink);background:#f6f9f7}
+body.mob .chips button.on{background:var(--g1);color:#fff;border-color:var(--g1)}
+body.mob .mscope{font-size:11.5px;color:var(--mut);padding:2px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.mob main{flex:1 1 0;min-height:0;margin:0;border:0;border-radius:0}
+body.mob .wrap{display:none}
+body.mob #mv{display:block;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px calc(24px + env(safe-area-inset-bottom));background:var(--bg)}
+body.vazio .mbar,body.vazio #mv{display:none!important}
+body.mob .vzc .drop{display:none}
+body.mob .vzc h2{font-size:18px}
+/* cartões */
+.cd{--lc:var(--g2);background:#fff;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:9px;padding:8px 10px 9px;margin:0 0 6px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.cd.ok{--lc:var(--ok)}.cd.run{--lc:var(--run)}.cd.late{--lc:var(--late)}.cd.fut{--lc:var(--fut)}
+.cd.root{background:var(--g3)}
+.cd.ctx{opacity:.6}.cd.dup{border-style:dashed}.cd.sel{outline:2px solid var(--g1)}
+.cd.flash{animation:fl 1.6s}
+.c1{display:flex;align-items:flex-start;gap:2px}
+.ctg{flex:none;width:36px;height:36px;margin:-5px 0 -5px -8px;border:0;background:none;color:var(--g1);font-size:16px;padding:0}
+.ctg.none{visibility:hidden}
+.cn{font-size:14px;line-height:1.3;font-weight:500;word-break:break-word;padding-top:1px}
+.cd.root .cn{font-weight:700;color:var(--g1)}
+.cn.sm{font-weight:700}
+.c2{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 2px}
+.chip{display:inline-block;padding:1px 8px;border-radius:10px;background:#edf3ef;color:#41564a;font-size:11.5px;line-height:18px;white-space:nowrap}
+.chip.p{background:#fde8e5;color:var(--late);font-weight:700}.chip.n{background:#e1f1de;color:var(--ok);font-weight:700}
+.chip.rp{background:#fff2cf;color:#8a5a00}
+.chip .st{width:8px;height:8px;margin-right:4px}
+.dl{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:2px 0;border-bottom:1px dotted #e3ebe5}
+.dl span{color:var(--mut)}.dl b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.dl b.late{color:var(--late)}.dl b.early{color:var(--ok)}
+.c5{font-size:12px;color:var(--mut);margin-top:4px}
+.mini{position:relative;height:16px;margin-top:7px;background:#f0f4f1;border-radius:3px;overflow:hidden}
+.mini i{position:absolute;display:block}
+.mini .bl{top:11px;height:3px;background:var(--lb)}
+.mini .cu{top:3px;height:7px;border-radius:2px;min-width:3px}
+.mini .cu.ok{background:var(--ok)}.mini .cu.run{background:var(--run)}.mini .cu.late{background:var(--late)}.mini .cu.fut{background:var(--fut)}
+.mini .ms{top:3px;width:8px;height:8px;margin-left:-4px;transform:rotate(45deg)}
+.mini .ms.ok{background:var(--ok)}.mini .ms.run{background:var(--run)}.mini .ms.late{background:var(--late)}.mini .ms.fut{background:var(--fut)}
+.mini .mcut{top:0;bottom:0;width:0;border-left:2px solid var(--late);opacity:.8}
+.mfim{text-align:center;color:var(--mut);font-size:12px;padding:10px}
+/* filtros (folha inferior) */
+body.mob #bk{display:none;position:fixed;inset:0;background:rgba(20,38,28,.45);z-index:110}
+body.mob.filopen #bk,body.mob.menuopen #bk{display:block}
+body.mob #fil{visibility:hidden;position:fixed;left:0;right:0;bottom:0;max-height:88dvh;overflow-y:auto;background:#fff;z-index:120;border-radius:16px 16px 0 0;transform:translateY(105%);transition:transform .22s,visibility 0s .22s;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -8px 30px rgba(0,0,0,.28)}
+body.mob.filopen #fil{transform:none;visibility:visible;transition-delay:0s}
+body.mob .fh{display:flex;position:sticky;top:0;z-index:3;background:#fff;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:15px;color:var(--g1)}
+body.mob .fh button{padding:8px 16px;font-size:14px}
+body.mob .tools{flex-direction:column;align-items:stretch;flex-wrap:nowrap;padding:6px 16px;gap:2px}
+body.mob .tools .grp{margin-top:8px;font-size:11.5px}
+body.mob .tools label{justify-content:space-between;gap:10px;padding:5px 0;font-size:14px;color:var(--ink);min-height:42px}
+body.mob .tools select,body.mob .tools input[type=date]{font-size:16px;padding:8px;min-width:0;max-width:62%!important}
+body.mob .tools input[type=checkbox]{width:22px;height:22px}
+body.mob .tools label:has(>input[type=checkbox]){flex-direction:row-reverse}
+body.mob .tools label>select:only-child{max-width:100%!important;width:100%}
+body.mob .tools button{width:100%;padding:12px;font-size:14px;margin-top:4px}
+body.mob .tools #bcsv{margin-left:0!important}
+body.mob .sep,body.mob .dk{display:none!important}
+body.mob .legend{padding:8px 16px;gap:6px 14px}
+body.mob .how{display:block;padding:4px 16px 16px;font-size:13px;line-height:1.45;color:var(--ink)}
+body.mob .how summary{cursor:pointer;font-weight:700;color:var(--g1);padding:8px 0}
+body.mob .how p{margin:6px 0}
+/* detalhes (folha inferior) */
+body.mob aside{visibility:hidden;transition:transform .22s,visibility 0s .22s;position:fixed;left:0;right:0;top:auto;bottom:0;width:100%;max-height:86dvh;border-left:0;border-top:3px solid var(--g1);border-radius:16px 16px 0 0;transform:translateY(105%);z-index:125;padding:14px 16px calc(16px + env(safe-area-inset-bottom))}
+body.mob aside.open{transform:none;visibility:visible;transition-delay:0s}
+body.mob aside h2{font-size:15px;margin-right:46px}
+body.mob aside .x{width:46px;height:46px;font-size:28px;right:2px;top:0;color:var(--g1)}
+body.mob aside li{padding:11px 6px;font-size:13.5px}
+body.mob aside td,body.mob aside th{padding:5px 4px;font-size:12.5px}
+/* relatório */
+body.mob #pdfm{padding:0;align-items:stretch}
+body.mob .mdl{border-radius:0;width:100%;min-height:100%;display:flex;flex-direction:column}
+body.mob .mdl .mh{position:sticky;top:0;z-index:2}
+body.mob .mdl .mb{display:block;flex:1}
+body.mob .mdl label{padding:6px 0;font-size:14px}
+body.mob .mdl .pl{max-height:230px}
+body.mob .mdl .pl label{padding:8px}
+body.mob .mdl input[type=text],body.mob .mdl select{font-size:16px;padding:8px}
+body.mob .mdl input[type=checkbox],body.mob .mdl input[type=radio]{width:20px;height:20px}
+body.mob .mdl .mf{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+body.mob .mdl .mf .inf,body.mob .mdl .mf small{grid-column:1/-1;margin:0;max-width:none!important}
+body.mob .mdl .mf button{padding:12px;font-size:14px}
+body.mob .mdl .tl input{min-width:0}
+body.mob .mdl label select,body.mob .mdl label input[type=text]{min-width:0;max-width:64%}
+body.mob .mdl label{gap:8px}
+body.mob .mdl .tl button{flex:none}
+body.mob #ldg{font-size:14px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <img src="__LOGO__" alt="Combio">
+  <div class="tt"><h1 id="ttl"></h1><div class="sub" id="sub"></div></div>
+  <div class="acts">
+    <button id="bfile" title="Carregar outro cronograma (.mpp)">Trocar arquivo Project</button>
+    <button id="bsave" title="Baixar este painel como um HTML autônomo, com os dados carregados">Salvar HTML</button>
+    <button id="bpdf" title="Montar um relatório em PDF com as tarefas e sucessoras que você escolher">Relatório PDF</button>
+  </div>
+  <button id="bmenu" aria-label="Menu de ações">⋮</button>
+  <div class="right" id="gen"></div>
+</header>
+<input type="file" id="fin" accept=".mpp,.xml" hidden>
+<div class="mbar">
+  <div class="mrow"><input type="search" id="qm" placeholder="Buscar tarefa ou ID" autocomplete="off"><button id="bfil" class="pri">Filtros<span id="fcnt"></span></button></div>
+  <div class="chips" id="chips">
+    <button data-s="">Todas</button><button data-s="late">Atrasadas</button><button data-s="run">Em andamento</button><button data-s="ok">Concluídas</button><button data-s="fut">Futuras</button>
+    <button data-x="d">Com desvio</button><button data-x="exp">Expandir tudo</button><button data-x="col">Recolher</button>
+  </div>
+  <div class="mscope" id="mscope"></div>
+</div>
+<div id="bk"></div>
+<div id="fil"><div class="fh"><span>Filtros e vista</span><button id="fx">Fechar</button></div>
+<div class="tools">
+  <span class="grp">Escopo</span>
+  <label class="dk">Buscar <input type="text" id="q" placeholder="nome da tarefa ou ID"></label>
+  <label>Tarefa principal (EDT) <select id="fp" style="max-width:300px"></select></label>
+  <label><select id="fm"><option value="d">Raízes: filhos diretos</option><option value="l">Raízes: tarefas de detalhe</option></select></label>
+  <label>Filtrar tarefa <select id="fr" style="max-width:240px"></select></label>
+  <label>Status <select id="fs"><option value="">Todos</option><option value="ok">Concluída</option><option value="run">Em andamento</option><option value="late">Atrasada</option><option value="fut">Futura</option></select></label>
+  <label><input type="checkbox" id="fd"> Só com desvio</label>
+  <label>Ordenar por <select id="sk"><option value="s">Início atual</option><option value="f">Término atual</option><option value="lbS">Início da linha de base</option><option value="lbF">Término da linha de base</option><option value="id">ID do cronograma</option><option value="nm">Nome da tarefa</option><option value="dv">Desvio de término</option><option value="pc">% concluído</option><option value="st">Status</option><option value="ch">Nº de sucessoras</option><option value="cf">Fim da cadeia</option></select></label>
+  <button id="sd" title="Inverter a ordem">▲ Crescente</button>
+</div>
+<div class="tools t2">
+  <span class="grp">Vista</span>
+  <label>Expandir até <select id="lv"><option value="0">Recolhido</option><option value="1">Nível 1</option><option value="2">Nível 2</option><option value="3">Nível 3</option><option value="4">Nível 4</option><option value="99">Última sucessora</option></select></label>
+  <label><input type="checkbox" id="dd" checked> Ocultar repetidas</label>
+  <span class="sep"></span>
+  <label>Data de status <input type="date" id="cut" title="Data de status do cronograma; os status (atrasada, em andamento…) são calculados nesta data"></label>
+  <button id="bst" title="Voltar para a data de status gravada no cronograma">Usar a do cronograma</button>
+  <button id="bhj" class="dk">Ir para a data de status</button>
+  <label class="dk">Largura da tarefa <input type="range" id="nmw" min="260" max="1100" step="10"></label>
+  <button id="nmfit" class="dk" title="Ajusta a largura ao maior nome visível">Ajustar ao texto</button>
+  <label class="dk"><input type="checkbox" id="nmwrap"> Quebrar texto</label>
+  <span class="sep dk"></span>
+  <label class="dk">Zoom <input type="range" id="zm" min="0.5" max="6" step="0.1" value="1.6"></label>
+  <span class="sep dk"></span>
+  <span class="grp dk">Colunas</span>
+  <label class="dk"><input type="checkbox" id="gLB" checked> Linha de base</label>
+  <label class="dk"><input type="checkbox" id="gAT" checked> Atual</label>
+  <label class="dk"><input type="checkbox" id="gCH" checked> Cadeia</label>
+  <button id="bcsv" class="pri" style="margin-left:auto">Exportar vista (CSV)</button>
+</div>
+<div class="legend">
+  <span><i class="sw" style="background:var(--ok)"></i>Concluída</span>
+  <span><i class="sw" style="background:var(--run)"></i>Em andamento</span>
+  <span><i class="sw" style="background:var(--late)"></i>Atrasada</span>
+  <span><i class="sw" style="background:var(--fut)"></i>Futura</span>
+  <span><i class="sw" style="background:var(--lb);height:4px"></i>Linha de base</span>
+  <span><i class="sw" style="background:var(--real);height:5px"></i>Real</span>
+  <span><i class="dm"></i>Tarefa de 1 dia (marco)</span>
+  <span><i class="sw" style="background:none;border-top:2px dashed var(--late);height:0"></i>Data de status</span>
+  <span class="dk" style="margin-left:auto">Clique numa linha para ver os detalhes · passe o mouse nos <b>?</b> do cabeçalho para a explicação de cada coluna</span>
+</div>
+<details class="how" id="howd"><summary>Como ler os cartões</summary>
+  <p><b>Linha de base</b>: datas planejadas originalmente (referência fixa).</p>
+  <p><b>Atual</b>: datas vigentes do cronograma. Fica <b style="color:var(--late)">vermelha</b> se passou da linha de base e <b style="color:var(--ok)">verde</b> se está antes.</p>
+  <p><b>Desvio</b>: término atual − término da linha de base, em dias corridos (+ atraso, − adiantado).</p>
+  <p><b>Relação</b>: vínculo com a tarefa de cima (FS término→início, SS início→início, FF término→término, SF início→término; ±Nd = defasagem).</p>
+  <p><b>Cadeia</b>: total de sucessoras (diretas e indiretas) e o maior término entre a tarefa e todas elas.</p>
+  <p><b>Faixa do cartão</b>: barra cinza fina = linha de base; barra colorida = atual; losango = tarefa de 1 dia; linha vermelha = data de status do cronograma.</p>
+  <p><b>Nív.</b>: 0 = tarefa principal, 1 = sucessora direta, 2 = sucessora da sucessora, e assim por diante. Toque no cartão para ver predecessoras e sucessoras.</p>
+</details>
+</div>
+<main>
+  <div id="mv"></div>
+  <div id="vz"><div class="vzc">
+    <h2>Nenhum cronograma carregado</h2>
+    <p>Carregue o arquivo do MS Project para ver as tarefas e todas as suas sucessoras em cascata, com linha de base, datas atuais e desvios.</p>
+    <button class="pri big" id="vzb">Carregar cronograma</button>
+    <div class="drop">ou arraste o arquivo para esta área</div>
+    <p class="hint" id="vzh"></p>
+  </div></div>
+  <div class="wrap" id="wrap"><table id="tb"></table><div id="ov"></div></div>
+  <aside id="dr"></aside>
+<div id="tip"></div>
+<div id="pdfm"></div>
+<div id="ldg"></div>
+</main>
+
+<script id="dados">window.__D=/*__DATA__*/null;</script>
+<script>/*__MPP__*/</script>
+<script>
+let D = window.__D || null, T = D ? D.tasks : {}, ROOTS = [];
+const LOGO_GREEN = '__LOGO2__';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dn = s => s ? Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) / 864e5 : null;
+const fmt = s => s ? s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(2,4) : '—';
+const fmtN = n => fmt(new Date(n*864e5).toISOString().slice(0,10));
+const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const ST = {ok:'Concluída', run:'Em andamento', late:'Atrasada', fut:'Futura'};
+const ID_W = 46;
+let NM_W = 400;
+try { NM_W = Math.min(1100, Math.max(260, +localStorage.getItem('combio_nm') || 400)); } catch (e) {}
+
+const prep = () => { for (const k in T) { const t = T[k]; t.k = k; t.d = {lbS:dn(t.lbS), lbF:dn(t.lbF), asS:dn(t.asS), asF:dn(t.asF), s:dn(t.s), f:dn(t.f)}; } };
+prep();
+
+const S = {exp:new Set(), dedupe:true, ppd:1.6, cut:Math.floor(Date.now()/864e5 - new Date().getTimezoneOffset()/1440), sel:null, sk:'s', sd:1, wrap:false};
+const CAP = 30000;
+let ACT = false, nodes = [], byKey = {}, firstOf = {}, rootNodes = [], vis = [], TMIN, TMAX;
+
+/* ---------- análise ---------- */
+function status(t) {
+  const d = t.d;
+  if (t.pc >= 1 || d.asF != null) return 'ok';
+  if (d.f < S.cut) return 'late';
+  if (d.asS == null && t.pc === 0 && d.s < S.cut) return 'late';
+  return (d.asS != null || t.pc > 0) ? 'run' : 'fut';
+}
+let chainMemo = {};
+function chain(k) {
+  if (chainMemo[k]) return chainMemo[k];
+  const seen = new Set([k]); let q = [k];
+  while (q.length) { const nq = []; for (const i of q) for (const s of T[i].su) { const j = String(s[0]); if (!seen.has(j)) { seen.add(j); nq.push(j); } } q = nq; }
+  let f = T[k].d.f, lf = T[k].d.lbF;
+  seen.forEach(i => { f = Math.max(f, T[i].d.f); if (T[i].d.lbF != null) lf = Math.max(lf ?? 0, T[i].d.lbF); });
+  return chainMemo[k] = {n: seen.size - 1, f, lf, set: seen};
+}
+const dvF = t => (t.d.f != null && t.d.lbF != null) ? t.d.f - t.d.lbF : null;
+const dvS = t => (t.d.s != null && t.d.lbS != null) ? t.d.s - t.d.lbS : null;
+const relTxt = r => r ? r[1] + (r[2] ? (r[2] > 0 ? '+' : '') + r[2] + 'd' : '') : '—';
+
+/* ---------- ordenação (como no Excel: vale para as tarefas principais e para as sucessoras de cada nível) ---------- */
+const NOMES_ORD = {id: 'ID', nm: 'Nome', s: 'Início atual', f: 'Término atual', lbS: 'Início LB', lbF: 'Término LB', dv: 'Desvio', pc: '%', st: 'Status', ch: 'Nº de sucessoras', cf: 'Fim da cadeia'};
+function valOrd(k, key) {
+  const t = T[k];
+  switch (key) {
+    case 'id': return t.id;
+    case 'nm': return t.n.toLowerCase();
+    case 'lbS': return t.d.lbS; case 'lbF': return t.d.lbF; case 's': return t.d.s; case 'f': return t.d.f;
+    case 'dv': return dvF(t);
+    case 'pc': return t.pc;
+    case 'st': return {late: 0, run: 1, fut: 2, ok: 3}[status(t)];
+    case 'ch': return chain(k).n;
+    case 'cf': return chain(k).n ? chain(k).f : null;
+  }
+}
+function cmpK(a, b) {
+  a = String(a); b = String(b);
+  const va = valOrd(a, S.sk), vb = valOrd(b, S.sk);
+  if (va == null || vb == null) return va == null && vb == null ? T[a].id - T[b].id : va == null ? 1 : -1;   // vazios sempre no fim
+  const c = typeof va === 'string' ? va.localeCompare(vb, 'pt') : va - vb;
+  return c ? c * S.sd : T[a].id - T[b].id;
+}
+function setSort(key) {
+  if (key === S.sk) S.sd = -S.sd; else { S.sk = key; S.sd = 1; }
+  syncSort(); build(); render();
+}
+function syncSort() { $('sk').value = S.sk; $('sd').textContent = S.sd > 0 ? '▲ Crescente' : '▼ Decrescente'; }
+const seta = k => S.sk === k ? `<span class="sa">${S.sd > 0 ? '▲' : '▼'}</span>` : '';
+
+/* ---------- árvore em cascata ---------- */
+function build() {
+  nodes = []; byKey = {}; firstOf = {}; rootNodes = [];
+  const rs = ROOTS.slice().sort(cmpK);
+  const visit = (k, parent, depth, root, rel, path) => {
+    const key = parent ? parent.key + '>' + k : k, fk = root + '|' + k;
+    if (nodes.length > CAP) return;
+    const dup = S.dedupe && fk in firstOf;
+    const n = {key, k, parent, depth, root, rel, dup, kids: [], first: dup ? firstOf[fk] : null};
+    nodes.push(n); byKey[key] = n; if (parent) parent.kids.push(n); else rootNodes.push(n);
+    if (!(fk in firstOf)) firstOf[fk] = key;
+    if (dup || path.includes(k)) return;
+    T[k].su.slice().sort((a, b) => cmpK(a[0], b[0]))
+      .forEach(r => visit(String(r[0]), n, depth + 1, root, r, path.concat(k)));
+  };
+  rs.forEach(r => visit(r, null, 0, r, null, []));
+}
+
+/* ---------- filtros / visibilidade ---------- */
+function filters() {
+  return {q: $('q').value.trim().toLowerCase(), r: $('fr').value, s: $('fs').value, d: $('fd').checked};
+}
+function computeVisible() {
+  const f = filters(), act = ACT = !!(f.q || f.s || f.d);
+  const self = {}, sub = {};
+  if (act) {
+    nodes.forEach(n => {
+      const t = T[n.k]; let m = true;
+      if (f.q) m = t.n.toLowerCase().includes(f.q) || String(t.id) === f.q;
+      if (m && f.s) m = status(t) === f.s;
+      if (m && f.d) m = !!dvF(t);
+      self[n.key] = m; if (m) sub[n.key] = true;
+    });
+    for (let i = nodes.length - 1; i >= 0; i--) if (sub[nodes[i].key] && nodes[i].parent) sub[nodes[i].parent.key] = true;
+  }
+  const out = [];
+  const walk = n => {
+    out.push(Object.assign(n, {ctx: act && !self[n.key]}));
+    if (!(act || S.exp.has(n.key))) return;
+    n.kids.forEach(c => { if (!act || sub[c.key]) walk(c); });
+  };
+  rootNodes.forEach(n => { if ((!f.r || n.k === f.r) && (!act || sub[n.key])) walk(n); });
+  return vis = out;
+}
+
+/* ---------- renderização ---------- */
+function dcell(cls, v, cmp) {
+  let c = 'd ' + cls;
+  if (cmp != null) c += cmp > 0 ? ' late' : cmp < 0 ? ' early' : '';
+  return `<td class="${c}">${fmt(v)}</td>`;
+}
+function ganttCell(t) {
+  const d = t.d, st = status(t), x = v => (v - TMIN) * S.ppd, w = (a, b) => Math.max((b - a + 1) * S.ppd, 3);
+  let h = '';
+  if (d.lbS != null) h += `<div class="bar bl" style="left:${x(d.lbS)}px;width:${w(d.lbS, d.lbF)}px" title="Linha de base: ${fmt(t.lbS)} → ${fmt(t.lbF)}"></div>`;
+  if (d.asS != null) { const e = d.asF ?? Math.max(Math.min(S.cut, d.f), d.asS); h += `<div class="bar ac" style="left:${x(d.asS)}px;width:${w(d.asS, e)}px" title="Real: ${fmt(t.asS)} → ${t.asF ? fmt(t.asF) : 'em andamento'}"></div>`; }
+  const tip = `${esc(t.n)} — Atual: ${fmt(t.s)} → ${fmt(t.f)} · ${Math.round(t.pc*100)}%`;
+  let endX;
+  if (d.s === d.f) { h += `<div class="ms ${st}" style="left:${x(d.s) + S.ppd/2}px" title="${tip}"></div>`; endX = x(d.s) + 12; }
+  else { const bw = w(d.s, d.f); h += `<div class="bar cu ${st}" style="left:${x(d.s)}px;width:${bw}px" title="${tip}"><div class="pg" style="width:${Math.min(t.pc,1)*100}%"></div></div>`; endX = x(d.s) + bw + 4; }
+  h += `<div class="lab" style="left:${endX}px">${fmt(t.s)}${d.s !== d.f ? ' – ' + fmt(t.f) : ''}</div>`;
+  return h;
+}
+function row(n) {
+  const t = T[n.k], st = status(t), ch = chain(n.k), hasK = n.kids.length > 0;
+  const open = hasK && (ACT || S.exp.has(n.key));
+  const dv = dvF(t), dvc = dv == null ? 'z' : dv > 0 ? 'p' : dv < 0 ? 'n' : 'z';
+  const cls = ['', n.depth === 0 ? 'root' : '', n.ctx ? 'ctx' : '', n.dup ? 'dup' : '', S.sel === n.key ? 'sel' : ''].join(' ');
+  const tg = hasK ? `<span class="tg" data-t="${n.key}">${open ? '▾' : '▸'}</span>` : '<span class="tg none">▸</span>';
+  const bd = n.dup ? `<span class="badge dup" data-f="${n.first}" title="Já listada acima nesta dependência. Clique para ir até lá.">↩ repetida</span>`
+           : hasK ? `<span class="badge" title="Sucessoras diretas">↳ ${n.kids.length}</span>` : '';
+  return `<tr class="${cls}" data-k="${n.key}">
+    <td class="sticky1 d" style="color:var(--mut)">${t.id}</td>
+    <td class="sticky2 nm" style="padding-left:${6 + n.depth*16}px" title="${esc(t.wbs)} · ${esc(t.n)}">${tg}<span class="st ${st}" title="${ST[st]}"></span><span class="nmt${t.sum ? ' sumt' : ''}">${esc(t.n)}</span>${bd}</td>
+    <td class="rel c-rel">${n.depth ? relTxt(n.rel) : '—'}</td>
+    <td class="d lb c-lb">${fmt(t.lbS)}</td><td class="d lb c-lb">${fmt(t.lbF)}</td>
+    ${dcell('at c-at', t.s, dvS(t))}${dcell('at c-at', t.f, dv)}
+    <td class="dv ${dvc}">${dv == null ? '—' : (dv > 0 ? '+' : '') + dv + 'd'}</td>
+    <td class="pc">${Math.round(t.pc*100)}%</td>
+    <td class="ch c-ch" title="Sucessoras (total) · término da cadeia">${ch.n ? ch.n + ' · ' + fmtN(ch.f) : '—'}</td>
+    <td class="g">${ganttCell(t)}</td></tr>`;
+}
+function render(keepScroll = true) {
+  if (S.mob) return renderMob();
+  const wrap = $('wrap'), sl = wrap.scrollLeft, stp = wrap.scrollTop;
+  computeVisible();
+  const gw = (TMAX - TMIN) * S.ppd + 110;
+  let mh = '', yh = '';
+  for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(), x = 0; ; ) {
+    const a = Date.UTC(y, m, 1) / 864e5, b = Date.UTC(y, m + 1, 1) / 864e5;
+    if (a > TMAX) break;
+    const xa = Math.max(a - TMIN, 0) * S.ppd, sobra = (b - TMIN) * S.ppd - xa;     // mês cortado no início da escala não ganha rótulo se não couber
+    if ((S.ppd >= 0.9 || m % 3 === 0) && sobra >= (S.ppd >= 0.9 ? 22 : 12)) mh += `<div class="mo" style="left:${xa}px">${S.ppd >= 1.2 ? MES[m] : MES[m][0]}</div>`;
+    if (m === 0 || a <= TMIN) yh += `<div class="yr" style="left:${xa}px">${y}</div>`;
+    if (++m > 11) { m = 0; y++; }
+  }
+  const on = g => $('g'+g).checked;
+  $('tb').style.width = (ID_W + NM_W + 76 + 80 + 44 + (on('LB') ? 140 : 0) + (on('AT') ? 140 : 0) + (on('CH') ? 118 : 0) + gw) + 'px';
+  $('tb').className = ['LB','AT','CH'].filter(g => !$('g'+g).checked).map(g => 'hide-' + g.toLowerCase()).concat(S.wrap ? ['wrapnm'] : []).join(' ');
+  $('tb').innerHTML = `<colgroup><col style="width:${ID_W}px"><col style="width:${NM_W}px"><col class="c-rel" style="width:76px"><col class="c-lb" style="width:70px"><col class="c-lb" style="width:70px"><col class="c-at" style="width:70px"><col class="c-at" style="width:70px"><col style="width:80px"><col style="width:44px"><col class="c-ch" style="width:118px"><col style="width:${gw}px"></colgroup>
+  <thead><tr class="h1"><th class="sticky1" rowspan="2" data-sk="id">ID${seta('id')}<span class="hq" data-h="id">?</span></th><th class="sticky2" rowspan="2" style="text-align:left" data-sk="nm">Tarefa · cascata de sucessoras${seta('nm')}<span class="hq" data-h="nm">?</span><span class="rz" title="Arraste para ajustar a largura · duplo clique ajusta ao texto"></span></th><th class="c-rel" rowspan="2">Relação<span class="hq" data-h="rel">?</span></th>
+   <th class="gLB c-lb" colspan="2">Linha de base<span class="hq" data-h="lb">?</span></th><th class="gAT c-at" colspan="2">Atual (cronograma)<span class="hq" data-h="at">?</span></th>
+   <th rowspan="2" data-sk="dv">Desvio<br>término${seta('dv')}<span class="hq" data-h="dv">?</span></th><th rowspan="2" data-sk="pc">%${seta('pc')}<span class="hq" data-h="pc">?</span></th><th class="c-ch" rowspan="2" data-sk="ch">Cadeia<br>suc. · fim${seta('ch')}<span class="hq" data-h="ch">?</span></th><th rowspan="2" style="padding:0;position:sticky"><div class="gh">${yh}${mh}</div><span class="hq" data-h="gt" style="position:absolute;right:6px;top:6px">?</span></th></tr>
+   <tr class="h2"><th class="gLB c-lb" data-sk="lbS">Início${seta('lbS')}</th><th class="gLB c-lb" data-sk="lbF">Término${seta('lbF')}</th><th class="gAT c-at" data-sk="s">Início${seta('s')}</th><th class="gAT c-at" data-sk="f">Término${seta('f')}</th></tr></thead>
+  <tbody>${vis.length ? vis.map(row).join('') : '<tr><td colspan="11" class="empty">Nenhuma tarefa para os filtros atuais.</td></tr>'}</tbody>`;
+  const gth = $('tb').querySelector('thead tr.h1 th:last-child'), hh = $('tb').querySelector('thead').offsetHeight;
+  const ov = $('ov'); ov.style.left = gth.offsetLeft + 'px'; ov.style.top = hh + 'px';
+  ov.style.width = gw + 'px'; ov.style.height = ($('tb').offsetHeight - hh) + 'px';
+  let o = '';
+  for (let y = new Date(TMIN*864e5).getUTCFullYear(), m = new Date(TMIN*864e5).getUTCMonth(); ; ) {
+    const a = Date.UTC(y, m, 1) / 864e5; if (a > TMAX) break;
+    if (a > TMIN) o += `<div class="ml${m === 0 ? ' y' : ''}" style="left:${(a - TMIN) * S.ppd}px"></div>`;
+    if (++m > 11) { m = 0; y++; }
+  }
+  o += `<div class="cut" style="left:${(S.cut - TMIN) * S.ppd}px"><span>Status ${fmtN(S.cut)}</span></div>`;
+  ov.innerHTML = o;
+  if (keepScroll) { wrap.scrollLeft = sl; wrap.scrollTop = stp; }
+  $('wrap').style.setProperty('--idw', ID_W + 'px'); $('nmw').value = NM_W;
+}
+
+/* ---------- celular: cascata em cartões ---------- */
+const MQ = matchMedia('(max-width: 820px), (max-height: 520px) and (pointer: coarse)');
+const fecharFolhas = () => document.body.classList.remove('filopen', 'menuopen');
+function aplicarModo() {
+  S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob); fecharFolhas();
+  if (D) render();
+}
+function faixa(t, st) {
+  const span = TMAX - TMIN, p = v => ((v - TMIN) / span * 100).toFixed(2), d = t.d;
+  let h = '';
+  if (d.lbS != null) h += `<i class="bl" style="left:${p(d.lbS)}%;width:${Math.max((d.lbF - d.lbS + 1) / span * 100, .6)}%"></i>`;
+  h += d.s === d.f ? `<i class="ms ${st}" style="left:${p(d.s)}%"></i>` : `<i class="cu ${st}" style="left:${p(d.s)}%;width:${Math.max((d.f - d.s + 1) / span * 100, .6)}%"></i>`;
+  return `<div class="mini" title="Linha do tempo do projeto">${h}<i class="mcut" style="left:${p(S.cut)}%"></i></div>`;
+}
+function cartao(n) {
+  const t = T[n.k], st = status(t), ch = chain(n.k), hasK = n.kids.length > 0, open = hasK && (ACT || S.exp.has(n.key));
+  const dv = dvF(t), ds = dvS(t), sg = v => (v > 0 ? '+' : '') + v + 'd';
+  const cl = v => v > 0 ? ' late' : v < 0 ? ' early' : '';
+  return `<div class="cd ${st}${n.depth === 0 ? ' root' : ''}${n.ctx ? ' ctx' : ''}${n.dup ? ' dup' : ''}${S.sel === n.key ? ' sel' : ''}" data-k="${n.key}" style="margin-left:${Math.min(n.depth, 6) * 9}px">
+    <div class="c1">${hasK ? `<button class="ctg" data-t="${n.key}" aria-label="${open ? 'Recolher' : 'Expandir'} sucessoras">${open ? '▾' : '▸'}</button>` : '<span class="ctg none"></span>'}<span class="cn${t.sum ? ' sm' : ''}">${esc(t.n)}</span></div>
+    <div class="c2"><span class="chip">ID ${t.id} · Nív. ${n.depth}</span>${n.depth ? `<span class="chip" title="Vínculo com a tarefa de cima">${relTxt(n.rel)}</span>` : ''}
+      <span class="chip"><i class="st ${st}"></i>${ST[st]}</span><span class="chip">${Math.round(t.pc * 100)}%</span>
+      ${dv ? `<span class="chip ${dv > 0 ? 'p' : 'n'}">Desvio ${sg(dv)}</span>` : ''}${hasK && !n.dup ? `<span class="chip">↳ ${n.kids.length}</span>` : ''}
+      ${n.dup ? `<span class="chip rp" data-f="${n.first}">↩ repetida — ver acima</span>` : ''}</div>
+    <div class="dl"><span>Linha de base</span><b>${fmt(t.lbS)} → ${fmt(t.lbF)}</b></div>
+    <div class="dl"><span>Atual</span><b class="${cl(dv).trim()}">${fmt(t.s)} → ${fmt(t.f)}</b></div>
+    ${ch.n ? `<div class="c5">Cadeia: ${ch.n} ${ch.n > 1 ? 'sucessoras' : 'sucessora'} · termina em ${fmtN(ch.f)}</div>` : ''}
+    ${faixa(t, st)}</div>`;
+}
+function renderMob() {
+  if (!D) return;
+  const mv = $('mv'), top = mv.scrollTop;
+  computeVisible();
+  mv.innerHTML = vis.length ? vis.map(cartao).join('') + '<div class="mfim">Fim da lista</div>' : '<div class="mfim">Nenhuma tarefa para os filtros atuais.</div>';
+  mv.scrollTop = top;
+  const f = $('fp').value && T[$('fp').value];
+  $('mscope').textContent = `${f ? f.wbs + ' · ' + f.n + ' · ' : ''}${ROOTS.length} principais · ${vis.length} linhas`;
+  document.querySelectorAll('#chips [data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === $('fs').value));
+  document.querySelector('#chips [data-x=d]').classList.toggle('on', $('fd').checked);
+  const nf = [$('fs').value, $('fd').checked, $('fr').value, $('q').value.trim()].filter(Boolean).length;
+  $('fcnt').textContent = nf || '';
+}
+
+/* ---------- largura da coluna Tarefa ---------- */
+function setNm(v) {
+  NM_W = Math.min(1100, Math.max(260, Math.round(v)));
+  try { localStorage.setItem('combio_nm', NM_W); } catch (e) {}
+  render();
+}
+function ajustarNm() {
+  const cv = document.createElement('canvas').getContext('2d'); let w = 260;
+  vis.forEach(n => {
+    const t = T[n.k]; cv.font = (t.sum ? '700 ' : '') + '12.5px "Segoe UI", system-ui, Arial, sans-serif';
+    w = Math.max(w, 6 + n.depth * 16 + 18 + 14 + cv.measureText(t.n).width + (n.dup ? 84 : n.kids.length ? 46 : 0) + 16);
+  });
+  setNm(Math.ceil(w));
+}
+document.addEventListener('mousedown', e => {
+  const z = e.target.closest('.rz'); if (!z) return;
+  e.preventDefault(); z.classList.add('on');
+  const x0 = e.clientX, w0 = NM_W; let raf = 0;
+  const mv = ev => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setNm(w0 + ev.clientX - x0)); };
+  const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+  document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+});
+document.addEventListener('dblclick', e => { if (e.target.closest('.rz')) ajustarNm(); });
+
+/* ---------- navegação ---------- */
+function locate(k, pref) {
+  let n = byKey[firstOf[(pref || '') + '|' + k]];
+  if (!n) n = nodes.find(x => x.k === k);
+  if (!n) return;
+  for (let p = n.parent; p; p = p.parent) S.exp.add(p.key);
+  $('q').value = ''; $('qm').value = ''; $('fs').value = ''; $('fd').checked = false; if ($('fr').value && $('fr').value !== n.root) $('fr').value = '';
+  S.sel = n.key; render(); openDrawer(n.key);
+  const tr = document.querySelector(`${S.mob ? '#mv .cd' : '#tb tr'}[data-k="${CSS.escape(n.key)}"]`);
+  if (tr) { tr.scrollIntoView({block:'center'}); tr.classList.add('flash'); }
+}
+function openDrawer(key) {
+  const n = byKey[key], t = T[n.k], st = status(t), ch = chain(n.k), dF = dvF(t), dS = dvS(t);
+  const sg = v => v == null ? '—' : (v > 0 ? '+' : '') + v + 'd';
+  const dur = (a, b) => (a != null && b != null) ? (b - a + 1) + 'd' : '—';
+  const li = (arr, dirKey) => arr.length ? '<ul>' + arr.map(r => { const x = T[r[0]]; return `<li data-l="${r[0]}"><b>${x.id}</b> · ${esc(x.n)}<small>${relTxt(r)} · ${fmt(x.s)} → ${fmt(x.f)} · ${ST[status(x)]}</small></li>`; }).join('') + '</ul>' : '<div style="color:var(--mut);padding:4px 6px">Nenhuma.</div>';
+  $('dr').innerHTML = `<button class="x" id="dx">×</button>
+    <h2>${t.id} · ${esc(t.n)}</h2><div style="color:var(--mut);font-size:11.5px">EDT ${esc(t.wbs)}</div><div><span class="st ${st}"></span>${ST[st]} · ${Math.round(t.pc*100)}% concluída${t.sum ? ' · tarefa resumo' : ''}</div>
+    <h3>Datas</h3><table><tr><th></th><th>Início</th><th>Término</th><th>Dias corridos</th></tr>
+      <tr><td>Linha de base</td><td>${fmt(t.lbS)}</td><td>${fmt(t.lbF)}</td><td>${dur(t.d.lbS, t.d.lbF)}</td></tr>
+      <tr><td>Real</td><td>${fmt(t.asS)}</td><td>${fmt(t.asF)}</td><td>${dur(t.d.asS, t.d.asF)}</td></tr>
+      <tr><td><b>Atual</b></td><td><b>${fmt(t.s)}</b></td><td><b>${fmt(t.f)}</b></td><td>${dur(t.d.s, t.d.f)}</td></tr>
+      <tr><td>Desvio vs LB</td><td class="dv ${dS > 0 ? 'p' : dS < 0 ? 'n' : 'z'}">${sg(dS)}</td><td class="dv ${dF > 0 ? 'p' : dF < 0 ? 'n' : 'z'}">${sg(dF)}</td><td></td></tr></table>
+    <h3>Impacto na rede</h3><div>${ch.n ? `<b>${ch.n}</b> ${ch.n > 1 ? 'sucessoras' : 'sucessora'} no total · cadeia termina em <b>${fmtN(ch.f)}</b>${ch.lf != null ? ` (LB ${fmtN(ch.lf)}, ${sg(ch.f - ch.lf)})` : ''}` : 'Sem sucessoras (fim de cadeia).'}</div>
+    <h3>Predecessoras (${t.pr.length})</h3>${li(t.pr)}
+    <h3>Sucessoras diretas (${t.su.length})</h3>${li(t.su)}`;
+  $('dr').classList.add('open');
+  $('dx').onclick = () => { $('dr').classList.remove('open'); S.sel = null; render(); };
+  $('dr').querySelectorAll('li').forEach(l => l.onclick = () => locate(l.dataset.l, n.root));
+}
+
+/* ---------- CSV ---------- */
+function csv() {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', iso = v => v || '';
+  const rows = [['Tarefa principal (raiz)','Nível','EDT','ID','Tarefa','Relação','Início LB','Término LB','Início Atual','Término Atual','Desvio término (d)','% concl.','Status','Sucessoras (total)','Término da cadeia']];
+  vis.forEach(n => { const t = T[n.k], ch = chain(n.k); rows.push([T[n.root].id + ' ' + T[n.root].n, n.depth, t.wbs, t.id, t.n, n.depth ? relTxt(n.rel) : '', iso(t.lbS), iso(t.lbF), iso(t.s), iso(t.f), dvF(t) ?? '', Math.round(t.pc*100), ST[status(t)], ch.n, ch.n ? new Date(ch.f*864e5).toISOString().slice(0,10) : '']); });
+  const blob = new Blob(['﻿' + rows.map(r => r.map(q).join(';')).join('\r\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Painel_Combio_vista.csv'; a.click();
+}
+
+/* ---------- tarefa principal (EDT) ---------- */
+let KIDS = {};
+const mkKids = () => { KIDS = {}; for (const k in T) { const p = T[k].par; if (p != null) (KIDS[p] = KIDS[p] || []).push(k); } };
+mkKids();
+const byId = (a, b) => T[a].id - T[b].id;
+function leaves(k) { return (KIDS[k] || []).flatMap(c => T[c].sum ? leaves(c) : [c]); }
+function setRoots() {
+  const p = $('fp').value, k = KIDS[p] || [];
+  ROOTS = ($('fm').value === 'l' ? leaves(p) : k).sort(byId);
+  S.exp.clear(); S.sel = null; $('dr').classList.remove('open');
+  $('fr').innerHTML = '<option value="">Todas as tarefas principais (' + ROOTS.length + ')</option>' + ROOTS.map(r => `<option value="${r}">${T[r].id} · ${esc(T[r].n.slice(0, 60))}</option>`).join('');
+  $('lv').value = '0'; build(); render();
+}
+
+/* ---------- arquivo / salvar ---------- */
+const busy = m => { $('ldg').textContent = m || ''; $('ldg').classList.toggle('on', !!m); };
+const stamp = () => { const n = new Date(), z = v => String(v).padStart(2, '0'); return `${n.getFullYear()}${z(n.getMonth()+1)}${z(n.getDate())}_${z(n.getHours())}${z(n.getMinutes())}`; };
+const download = (blob, nome) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+function parseMSPDI(txt, nome) {
+  const x = new DOMParser().parseFromString(txt, 'application/xml'), pj = x.documentElement;
+  if (x.getElementsByTagName('parsererror').length || pj.localName !== 'Project') throw new Error('Este XML não é um arquivo do MS Project.');
+  const g = (e, tag) => { for (const c of e.children) if (c.localName === tag) return c.textContent.trim(); return null; };
+  const dia = v => v ? v.slice(0, 10) : null, mpd = +g(pj, 'MinutesPerDay') || 480;
+  const tasks = {}, pilha = [], tipo = {0: 'FF', 1: 'FS', 2: 'SF', 3: 'SS'};
+  for (const e of x.getElementsByTagName('Task')) {
+    const uid = g(e, 'UID'), id = +g(e, 'ID'), ol = +g(e, 'OutlineLevel') || 0;
+    if (uid === null || !id || g(e, 'IsNull') === '1') continue;                      // ID 0 = resumo do projeto
+    let bs = null, bf = null;
+    for (const b of e.children) if (b.localName === 'Baseline' && g(b, 'Number') === '0') { bs = dia(g(b, 'Start')); bf = dia(g(b, 'Finish')); }
+    pilha.length = ol; pilha[ol] = uid;
+    tasks[uid] = {id, wbs: g(e, 'WBS') || '', ol, par: ol > 1 ? +pilha[ol - 1] : null, n: g(e, 'Name') || '', sum: g(e, 'Summary') === '1',
+      lbS: bs, lbF: bf, asS: dia(g(e, 'ActualStart')), asF: dia(g(e, 'ActualFinish')), s: dia(g(e, 'Start')), f: dia(g(e, 'Finish')),
+      pc: (+g(e, 'PercentComplete') || 0) / 100, su: [], pr: []};
+    for (const l of e.children) if (l.localName === 'PredecessorLink') {
+      const lag = Math.round((+g(l, 'LinkLag') || 0) / 10 / mpd * 100) / 100;
+      tasks[uid].pr.push([+g(l, 'PredecessorUID'), tipo[g(l, 'Type') ?? 1] || 'FS', lag]);
+    }
+  }
+  for (const u in tasks) tasks[u].pr = tasks[u].pr.filter(p => tasks[p[0]]);
+  for (const u in tasks) tasks[u].pr.forEach(p => tasks[p[0]].su.push([+u, p[1], p[2]]));
+  return mppFinalizar(tasks, {projeto: (g(pj, 'Title') || g(pj, 'Name') || '').trim(), revisao: g(pj, 'Revision') || '', salvoEm: dia(g(pj, 'LastSaved')), dataStatus: dia(g(pj, 'StatusDate'))}, nome);
+}
+async function lerArquivo(f) {
+  const ext = f.name.split('.').pop().toLowerCase();
+  busy('Lendo ' + f.name + ' …'); $('dr').classList.remove('open');
+  await new Promise(r => setTimeout(r, 30));                     // deixa a tela de "lendo" aparecer
+  try {
+    let d;
+    if (ext === 'mpp') d = parseMPP(new Uint8Array(await f.arrayBuffer()), f.name);
+    else if (ext === 'xml') d = parseMSPDI(await f.text(), f.name);
+    else throw new Error('Formato não suportado. Use .mpp (ou .xml exportado) do MS Project.');
+    loadData(d);
+  } catch (e) { alert('Não foi possível ler o arquivo.\n' + e.message); }
+  busy(''); $('fin').value = '';
+}
+const trocarArquivo = () => $('fin').click();
+function vazio() {
+  document.body.classList.add('vazio'); $('ttl').textContent = 'Painel de Sucessoras'; $('sub').textContent = 'Nenhum cronograma carregado'; $('gen').innerHTML = '';
+  $('bfile').textContent = 'Carregar cronograma'; $('bsave').disabled = $('bpdf').disabled = true;
+  $('vzh').innerHTML = S.mob ? 'Escolha o <b>.mpp</b> (ou <b>.xml</b>) do MS Project que está no aparelho, ou abra um <b>HTML salvo</b> pelo computador (botão <b>Salvar HTML</b>).' : 'Aceita o arquivo <b>.mpp</b> do MS Project (2010 ou mais novo) ou o <b>.xml</b> exportado por ele. A leitura é feita aqui mesmo, no navegador; nada é enviado a lugar nenhum.';
+}
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); document.body.classList.add('dragging'); }));
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dragging'); });
+document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dragging'); if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
+function salvarHtml() {
+  const c = document.documentElement.cloneNode(true);
+  const dados = JSON.stringify({...D, pasta: +$('fp').value || D.pasta}, (k, v) => (k === 'k' || (k === 'd' && v && typeof v === 'object' && !Array.isArray(v) && 'lbS' in v)) ? undefined : v).replace(/</g, '\\u003c');
+  c.querySelector('#dados').textContent = 'window.__D=' + dados + ';';
+  ['tb', 'ov', 'dr', 'tip', 'pdfm', 'ldg', 'fp', 'fr'].forEach(id => { const e = c.querySelector('#' + id); e.innerHTML = ''; e.removeAttribute('style'); e.className = ''; });
+  const nome = 'Painel_Combio_' + D.arquivo.replace(/\.[^.]+$/, '').replace(/[^\w.-]+/g, '_') + '_' + stamp() + '.html';
+  download(new Blob(['<!DOCTYPE html>\n' + c.outerHTML], {type: 'text/html;charset=utf-8'}), nome);
+}
+
+/* ---------- relatório PDF ---------- */
+const fmtL = n => new Date(n * 864e5).toISOString().slice(0, 10).split('-').reverse().join('/');
+const sucSorted = k => T[k].su.slice().sort((a, b) => cmpK(a[0], b[0]));
+function repTree(root, maxD, dedupe, rows) {
+  const seen = new Set();
+  const go = (k, d, par, rel, path) => {
+    if (rows.length > 20000 || (dedupe && d > 0 && seen.has(k))) return;
+    seen.add(k); rows.push({k, d, par, rel, root});
+    if (d >= maxD || path.includes(k)) return;
+    sucSorted(k).forEach(r => go(String(r[0]), d + 1, k, r, path.concat(k)));
+  };
+  go(root, 0, null, null, []);
+}
+function pdfOpts() {
+  const g = n => document.querySelector(`#pdfm [name=${n}]:checked`)?.value;
+  const roots = [...document.querySelectorAll('#pdfm .pl input:checked')].map(i => i.value);
+  return {mode: g('pm'), roots, dep: g('pd'), nivel: +$('pn').value, dedupe: $('pdd').checked, land: $('por').value === 'l',
+          brk: $('pbrk').checked, titulo: $('ptt').value.trim() || 'Relatório de Tarefas e Sucessoras',
+          cols: Object.fromEntries([...document.querySelectorAll('#pdfm .pc input')].map(i => [i.name, i.checked]))};
+}
+function pdfRows(o) {
+  const rows = [];
+  if (o.mode === 'view') { computeVisible(); vis.forEach(n => rows.push({k: n.k, d: n.depth, par: n.parent ? n.parent.k : null, rel: n.rel, dup: n.dup, root: n.root})); }
+  else {
+    const md = o.dep === 'none' ? 0 : o.dep === 'n' ? o.nivel : 99;
+    ROOTS.filter(r => o.roots.includes(r)).sort(cmpK)
+         .forEach(r => repTree(r, md, o.dedupe, rows));
+  }
+  return rows;
+}
+function pdfInfo() {
+  const o = pdfOpts(), rows = pdfRows(o), nr = rows.filter(r => r.d === 0).length;
+  $('pinf').textContent = rows.length ? `${nr} ${nr === 1 ? 'tarefa principal' : 'tarefas principais'} · ${rows.length} ${rows.length === 1 ? 'linha' : 'linhas'} no relatório` : 'Nada selecionado.';
+  $('pgo').disabled = !rows.length;
+}
+function reportHtml(o) {
+  const rows = pdfRows(o), c = o.cols, W = o.land ? 1 : 0;
+  const colsDef = [['id', 'ID', W ? 10 : 8], ['lv', 'Nív.', W ? 7 : 6], ['nm', 'Tarefa', 0],
+    ...(c.pred ? [['pred', 'Predecessora<br>(ID · vínculo)', W ? 22 : 18]] : []),
+    ...(c.lb ? [['lbS', 'LB<br>início', W ? 16 : 14.5], ['lbF', 'LB<br>término', W ? 16 : 14.5]] : []),
+    ...(c.at ? [['s', 'Atual<br>início', W ? 16 : 14.5], ['f', 'Atual<br>término', W ? 16 : 14.5]] : []),
+    ...(c.dv ? [['dv', 'Desvio<br>término', W ? 14 : 11]] : []), ...(c.pc ? [['pc', '%', W ? 10 : 9]] : []), ...(c.st ? [['st', 'Status', W ? 25 : 21]] : [])];
+  const N = colsDef.length, sg = v => v == null ? '—' : (v > 0 ? '+' : '') + v + 'd';
+  const cell = (key, t, r, st, ch) => {
+    switch (key) {
+      case 'id': return `<td class="c ix">${t.id}</td>`;
+      case 'lv': return `<td class="c ix">${r.d}</td>`;
+      case 'nm': return `<td class="nm" style="padding-left:${1.5 + Math.min(r.d, W ? 6 : 5) * (W ? 3 : 1.8)}mm"><div class="tn${r.dup ? ' dp' : ''}">${esc(t.n)}${r.dup ? ' <i>(repetida — ver acima)</i>' : ''}</div>${r.d === 0 ? `<div class="ss">${ch.n ? `${ch.n} sucessora${ch.n > 1 ? 's' : ''} · cadeia termina em ${fmtN(ch.f)}` : 'Sem sucessoras'} · EDT ${esc(t.wbs)}</div>` : ''}</td>`;
+      case 'pred': return `<td class="c">${r.par ? `${T[r.par].id} · ${relTxt(r.rel)}` : '—'}</td>`;
+      case 'dv': { const v = dvF(t); return `<td class="c ${v > 0 ? 'late' : v < 0 ? 'early' : ''}"><b>${sg(v)}</b></td>`; }
+      case 'pc': return `<td class="c">${Math.round(t.pc * 100)}%</td>`;
+      case 'st': return `<td class="stc"><i class="dot ${st}"></i>${ST[st]}</td>`;
+      default: return `<td class="c">${fmt(t[key])}</td>`;
+    }
+  };
+  const body = rows.map(r => {
+    const t = T[r.k], st = status(t), ch = chain(r.k);
+    return `<tr class="${r.d === 0 ? 'rt' : ''}${r.d === 0 && o.brk ? ' brk' : ''}">${colsDef.map(cd => cell(cd[0], t, r, st, ch)).join('')}</tr>`;
+  }).join('');
+  const edt = T[$('fp').value];
+  const nRoots = new Set(rows.map(r => r.root)).size;
+  const escopo = o.mode === 'view' ? 'vista atual da tela' : (o.dep === 'none' ? 'somente as tarefas principais' : o.dep === 'n' ? `sucessoras até o nível ${o.nivel}` : 'sucessoras até a última');
+  const css = `
+@page{size:A4 ${o.land ? 'landscape' : 'portrait'};margin:13mm 10mm 14mm;
+ @bottom-left{content:"${esc(D.projeto.trim())} · data de status do cronograma ${fmtL(S.cut)}";font:7pt "Segoe UI",Arial,sans-serif;color:#667a6f}
+ @bottom-right{content:"Página " counter(page) " de " counter(pages);font:7pt "Segoe UI",Arial,sans-serif;color:#667a6f}}
+*{box-sizing:border-box}html,body{margin:0}
+body{font:${W ? 8 : 7}pt/1.3 "Segoe UI",Arial,sans-serif;color:#1c2a22;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+thead{display:table-header-group}tr{break-inside:avoid}
+.brand td{border:0;padding:0 0 2.5mm}
+.hd{display:flex;align-items:center;justify-content:space-between;border-bottom:1.6pt solid #02642e;padding-bottom:2.2mm}
+.hd img{height:8.5mm}.hd .ht{text-align:right;line-height:1.25}.hd .ht b{font-size:10.5pt;color:#02642e;display:block}.hd .ht span{font-size:7.5pt;color:#667a6f}
+.cols th{font-size:6.8pt;font-weight:600;color:#02642e;text-align:center;padding:1.4mm .8mm;border-bottom:.8pt solid #02642e;line-height:1.15}
+.cols th.nm{text-align:left;padding-left:1.5mm}
+td{padding:1.15mm .8mm;border-bottom:.4pt solid #dbe5de;vertical-align:top}
+td.c{text-align:center;white-space:nowrap}td.ix{color:#667a6f}
+td.nm .tn{font-size:${W ? 8 : 7.2}pt}td.nm .tn.dp{color:#667a6f}td.nm .tn i{font-size:6.8pt}
+td.nm .ss{font-size:6.8pt;color:#667a6f;margin-top:.3mm}
+tr.rt td{background:#eef6ec;border-top:.9pt solid #3d9036;font-weight:600}tr.rt td.nm .tn{font-size:${W ? 8.6 : 7.8}pt;color:#02642e}
+tr.brk{break-before:page}
+.late{color:#c0392b}.early{color:#02642e}
+.stc{white-space:nowrap;font-size:${W ? 7.2 : 6.6}pt;overflow:hidden}.dot{display:inline-block;width:2mm;height:2mm;border-radius:50%;margin-right:1.2mm;vertical-align:middle}
+.dot.ok{background:#02642e}.dot.run{background:#3d9036}.dot.late{background:#c0392b}.dot.fut{background:#7f93a8}
+.cover{padding:1mm 0 4mm}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2mm 6mm;margin:0 0 2.5mm}
+.meta div{font-size:7.2pt;color:#667a6f;line-height:1.3}.meta b{display:block;font-size:8pt;color:#1c2a22;font-weight:600}
+.how{font-size:6.8pt;color:#667a6f;border-left:2pt solid #3d9036;padding-left:2.5mm;line-height:1.4}
+`;
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(o.titulo)}</title><style>${css}</style></head><body>
+<table><colgroup>${colsDef.map(cd => `<col${cd[2] ? ` style="width:${cd[2]}mm"` : ''}>`).join('')}</colgroup>
+<thead><tr class="brand"><td colspan="${N}"><div class="hd"><img src="${LOGO_GREEN}" alt="Combio"><div class="ht"><b>${esc(o.titulo)}</b><span>${esc(D.projeto.trim())} · ${esc(D.arquivo)}</span></div></div></td></tr>
+<tr class="cols">${colsDef.map(cd => `<th${cd[0] === 'nm' ? ' class="nm"' : ''}>${cd[1]}</th>`).join('')}</tr></thead>
+<tbody><tr><td colspan="${N}" style="border:0;padding:0"><div class="cover">
+<div class="meta"><div>Projeto<b>${esc(D.projeto.trim())}</b></div><div>Arquivo · revisão<b>${esc(D.arquivo)} · Rev. ${esc(D.revisao)}</b></div>
+<div>Grupo (EDT)<b>${edt ? esc(edt.wbs + ' · ' + edt.n) : '—'}</b></div><div>Data de status do cronograma<b>${fmtL(S.cut)}</b></div>
+<div>Escopo<b>${esc(escopo)}</b></div><div>Tarefas principais<b>${nRoots}</b></div><div>Linhas no relatório<b>${rows.length}</b></div><div>Emitido em<b>${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</b></div></div>
+<div class="how"><b>Como ler:</b> LB = linha de base (planejamento original) · Atual = cronograma vigente · Desvio = término atual − término LB, em dias corridos (+ atraso, − adiantado) · Predecessora = tarefa imediatamente anterior na cascata e tipo de vínculo (FS término→início, SS início→início, FF término→término, SF início→término; ±Nd = defasagem) · Nív. 0 = tarefa principal, 1 = sucessora direta, e assim por diante · Status (concluída, em andamento, atrasada, futura) calculado na data de status do cronograma.</div></div></td></tr>
+${body}</tbody></table></body></html>`;
+}
+function abrirPdf() {
+  const sel = $('fr').value ? [$('fr').value] : ROOTS;
+  const ord = ROOTS.slice().sort(cmpK);
+  const col = (n, l) => `<label><input type="checkbox" name="${n}" checked> ${l}</label>`;
+  $('pdfm').innerHTML = `<div class="mdl"><div class="mh">Relatório em PDF · escolha o que entra</div><div class="mb">
+  <div><h4>1 · Tarefas</h4>
+   <label><input type="radio" name="pm" value="sel" checked> Escolher as tarefas principais abaixo</label>
+   <label><input type="radio" name="pm" value="view"> Usar exatamente a vista atual da tela <small>(filtros e linhas expandidas)</small></label>
+   <div class="tl"><input type="text" id="pq" placeholder="Buscar na lista…" style="flex:1"><button id="pall">Todas</button><button id="pnone">Nenhuma</button></div>
+   <div class="pl" id="ppl">${ord.map(r => `<label data-n="${esc(T[r].n.toLowerCase())} ${T[r].id}"><input type="checkbox" value="${r}"${sel.includes(r) ? ' checked' : ''}><span class="i">${T[r].id}</span>${esc(T[r].n)}</label>`).join('')}</div></div>
+  <div><h4>2 · Sucessoras</h4>
+   <label><input type="radio" name="pd" value="all" checked> Até a última sucessora</label>
+   <label><input type="radio" name="pd" value="n"> Até o nível <select id="pn">${[1,2,3,4,5,6,7,8].map(v => `<option>${v}</option>`).join('')}</select></label>
+   <label><input type="radio" name="pd" value="none"> Somente as tarefas principais</label>
+   <label><input type="checkbox" id="pdd" checked> Listar cada sucessora uma única vez</label>
+   <h4>3 · Colunas</h4><div class="pc">${col('pred', 'Predecessora (ID · vínculo)')}${col('lb', 'Linha de base')}${col('at', 'Atual')}${col('dv', 'Desvio de término')}${col('pc', '% concluído')}${col('st', 'Status')}</div>
+   <h4>4 · Página</h4>
+   <label>Orientação <select id="por"><option value="l">Paisagem (recomendado)</option><option value="p">Retrato (sem linha de base)</option></select></label>
+   <label><input type="checkbox" id="pbrk"> Cada tarefa principal em página nova</label>
+   <label>Título <input type="text" id="ptt" value="Relatório de Tarefas e Sucessoras" style="flex:1"></label></div></div>
+  <div class="mf"><span class="inf" id="pinf"></span><small style="max-width:260px">Vai abrir a janela de impressão do navegador: escolha "Salvar como PDF" e, se aparecerem, desmarque "Cabeçalhos e rodapés".</small><button id="pcan">Cancelar</button><button class="pri" id="pgo">Gerar PDF</button></div></div>`;
+  const m = $('pdfm');
+  m.classList.add('on');
+  m.onclick = e => { if (e.target === m) m.classList.remove('on'); };
+  m.oninput = m.onchange = pdfInfo;
+  $('pq').oninput = () => { const q = $('pq').value.toLowerCase().trim(); m.querySelectorAll('#ppl label').forEach(l => l.style.display = l.dataset.n.includes(q) ? '' : 'none'); };
+  $('pall').onclick = () => { m.querySelectorAll('#ppl label').forEach(l => { if (l.style.display !== 'none') l.querySelector('input').checked = true; }); pdfInfo(); };
+  $('pnone').onclick = () => { m.querySelectorAll('#ppl input').forEach(i => i.checked = false); pdfInfo(); };
+  $('pcan').onclick = () => m.classList.remove('on');
+  $('por').addEventListener('change', () => { const land = $('por').value === 'l'; m.querySelectorAll('.pc input[name=lb]').forEach(i => i.checked = land); });
+  $('pgo').onclick = gerarPdf;
+  pdfInfo();
+}
+async function gerarPdf() {
+  const o = pdfOpts(), html = reportHtml(o);
+  $('pdfm').classList.remove('on');
+  const w = window.open('', '_blank');
+  if (!w) { alert('O navegador bloqueou a janela do relatório. Permita pop-ups para este arquivo e tente de novo.'); return; }
+  w.document.write(html); w.document.close(); w.onload = () => w.print();
+}
+
+/* ---------- ajuda das colunas ---------- */
+const TIPS = {
+  id: '<b>ID</b><br>Número da linha da tarefa no MS Project (coluna "ID" do cronograma).',
+  nm: '<b>Tarefa · cascata de sucessoras</b><br>Clique nos títulos das colunas para ordenar (clique de novo para inverter) — a ordem vale para as tarefas principais e para as sucessoras de cada nível.<hr>A tarefa principal (filha do grupo EDT escolhido) aparece em negrito; as linhas recuadas abaixo dela são as suas <b>sucessoras</b>, nível por nível, até a última.<hr>▸ / ▾ expande ou recolhe (duplo clique na linha também).<br>↳ N = quantidade de sucessoras diretas.<br>● = status: verde-escuro concluída · verde em andamento · vermelho atrasada · cinza futura.<br>↩ repetida = a tarefa já foi listada acima na mesma cascata (clique para ir até lá).<br>Clique numa linha para ver predecessoras e sucessoras.',
+  rel: '<b>Relação</b><br>Tipo de vínculo entre esta tarefa e a de cima na cascata (sua predecessora).<hr><b>FS</b> término → início · <b>SS</b> início → início<br><b>FF</b> término → término · <b>SF</b> início → término<br><i>+Nd</i> = espera (lag) · <i>−Nd</i> = adiantamento, em dias.',
+  lb: '<b>Linha de base</b><br>Datas planejadas originalmente, congeladas quando a linha de base foi salva no MS Project. É a referência fixa para medir atraso — não muda com o replanejamento.',
+  at: '<b>Atual (cronograma)</b><br>Datas vigentes no cronograma hoje, já recalculadas pelo MS Project com os vínculos e replanejamentos. É o que está previsto agora.<hr>A data fica <b style="color:#ff9b8f">vermelha</b> se estiver depois da linha de base e <b style="color:#9fd69a">verde</b> se estiver antes.',
+  dv: '<b>Desvio de término</b><br>Término atual − Término da linha de base, em dias corridos.<hr><b style="color:#ff9b8f">+Nd</b> = atrasada · <b>−Nd</b> = adiantada · 0d = no prazo.',
+  pc: '<b>% concluído</b><br>Percentual de conclusão registrado na tarefa no MS Project.',
+  ch: '<b>Cadeia (suc. · fim)</b><br>Quantas sucessoras a tarefa tem no total (diretas e indiretas, até a última) · e a data do <b>maior término atual</b> entre a tarefa e todas elas — ou seja, até quando essa cadeia se estende. É o impacto se a tarefa atrasar.',
+  gt: '<b>Linha do tempo</b><br>Barra grande = <b>atual</b> (cor pelo status; trecho escuro = % concluído).<br>Barra cinza fina embaixo = <b>linha de base</b>.<br>Barra azul-escura fina em cima = <b>real</b> (do início real ao término real, ou até a data de status se em andamento).<br>Losango = tarefa/marco de 1 dia.<br>Linha vermelha tracejada = <b>data de status do cronograma</b>.<br>Texto ao lado da barra = datas atuais (início – término).'
+};
+(function () {
+  const tip = $('tip');
+  const show = h => {
+    tip.innerHTML = TIPS[h.dataset.h]; tip.style.display = 'block';
+    const r = h.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(r.left, innerWidth - tip.offsetWidth - 8)) + 'px';
+    tip.style.top = (r.bottom + 8) + 'px';
+  };
+  document.addEventListener('mouseover', e => { const h = e.target.closest('.hq'); if (h) show(h); });
+  document.addEventListener('mouseout', e => { if (e.target.closest('.hq')) tip.style.display = 'none'; });
+})();
+
+/* ---------- init ---------- */
+function loadData(d) {
+  const old = T && $('fp').value && T[$('fp').value] ? T[$('fp').value] : null;
+  D = d; T = D.tasks; prep(); mkKids(); chainMemo = {};
+  S.cut = dn(D.dataStatus) ?? S.cut; $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
+  document.body.classList.remove('vazio'); $('bfile').textContent = 'Trocar arquivo Project'; $('bsave').disabled = $('bpdf').disabled = false;
+  $('ttl').textContent = 'Painel de Sucessoras · ' + D.projeto.trim();
+  $('sub').textContent = `${D.arquivo} · Rev. ${D.revisao}${D.salvoEm ? ' · salvo em ' + fmt(D.salvoEm) : ''}${D.dataStatus ? ' · data de status do cronograma ' + fmt(D.dataStatus) : ''}`;
+  $('gen').innerHTML = 'Painel gerado em<br>' + D.geradoEm;
+  let a = 1e9, b = -1e9;
+  for (const k in T) { const d = T[k].d; [d.lbS, d.lbF, d.asS, d.asF, d.s, d.f].forEach(v => { if (v != null) { a = Math.min(a, v); b = Math.max(b, v); } }); }
+  TMIN = a - 7; TMAX = b + 14;
+  $('fp').innerHTML = Object.keys(T).filter(k => KIDS[k]).sort(byId).map(k => `<option value="${k}">${'  '.repeat(Math.max(T[k].ol - 1, 0))}${esc(T[k].wbs)} · ${esc(T[k].n.slice(0, 70))}</option>`).join('');
+  const same = old && Object.keys(T).find(k => KIDS[k] && T[k].n === old.n && T[k].wbs === old.wbs);
+  $('fp').value = same || String(D.pasta);
+  $('fp').onchange();
+}
+
+(function init() {
+  $('cut').value = new Date(S.cut * 864e5).toISOString().slice(0, 10);
+  $('fm').onchange = setRoots;
+  $('fp').onchange = () => { $('fm').value = (KIDS[$('fp').value] || []).every(c => T[c].sum) ? 'l' : 'd'; setRoots(); }; // filhos só-resumo: abre direto nas tarefas de detalhe
+  $('vzb').onclick = trocarArquivo;
+  S.mob = MQ.matches; document.body.classList.toggle('mob', S.mob);
+  D ? loadData(D) : vazio();
+
+  const refresh = () => render();
+  $('q').oninput = $('fs').onchange = $('fd').onchange = $('fr').onchange = () => render();
+  ['gLB','gAT','gCH'].forEach(i => $(i).onchange = () => render());
+  $('sk').onchange = () => { S.sk = $('sk').value; syncSort(); build(); render(); };
+  $('sd').onclick = () => { S.sd = -S.sd; syncSort(); build(); render(); };
+  syncSort();
+  $('dd').onchange = () => { S.dedupe = $('dd').checked; S.exp.clear(); S.sel = null; build(); render(); };
+  $('zm').oninput = () => { S.ppd = +$('zm').value; render(); };
+  $('lv').onchange = () => { const L = +$('lv').value; S.exp.clear(); nodes.forEach(n => { if (n.kids.length && n.depth < L) S.exp.add(n.key); }); render(); };
+  $('cut').onchange = () => { if ($('cut').value) { S.cut = dn($('cut').value); build(); refresh(); } };
+  $('bst').onclick = () => { if (D && D.dataStatus) { S.cut = dn(D.dataStatus); $('cut').value = D.dataStatus; build(); refresh(); } };
+  $('bhj').onclick = () => { const w = $('wrap'); const sw = ID_W + NM_W; w.scrollLeft = $('ov').offsetLeft + (S.cut - TMIN) * S.ppd - (sw + (w.clientWidth - sw) / 2); };
+  $('bcsv').onclick = csv;
+  MQ.addEventListener('change', aplicarModo);
+  addEventListener('resize', () => { if (MQ.matches !== S.mob) aplicarModo(); });  // garante a troca ao girar/redimensionar
+  $('bfil').onclick = () => document.body.classList.add('filopen'); $('fx').onclick = $('bk').onclick = fecharFolhas;
+  $('bmenu').onclick = () => document.body.classList.toggle('menuopen');
+  ['bfile', 'bsave', 'bpdf'].forEach(i => $(i).addEventListener('click', fecharFolhas));
+  $('qm').oninput = () => { $('q').value = $('qm').value; render(); };
+  $('q').addEventListener('input', () => { $('qm').value = $('q').value; });
+  $('chips').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if ('s' in b.dataset) $('fs').value = b.dataset.s;
+    else if (b.dataset.x === 'd') $('fd').checked = !$('fd').checked;
+    else { $('lv').value = b.dataset.x === 'exp' ? '99' : '0'; $('lv').onchange(); return; }
+    render();
+  };
+  $('mv').onclick = e => {
+    const tg = e.target.closest('.ctg[data-t]'), fb = e.target.closest('[data-f]'), cd = e.target.closest('.cd[data-k]');
+    if (tg) { const k = tg.dataset.t; S.exp.has(k) ? S.exp.delete(k) : S.exp.add(k); render(); return; }
+    if (fb) { const n = byKey[cd.dataset.k]; locate(n.k, n.root); return; }
+    if (cd) { S.sel = cd.dataset.k; render(); openDrawer(S.sel); }
+  };
+  $('nmw').oninput = () => setNm(+$('nmw').value); $('nmfit').onclick = ajustarNm;
+  $('nmwrap').onchange = () => { S.wrap = $('nmwrap').checked; render(); };
+  $('bfile').onclick = trocarArquivo; $('fin').onchange = () => { if ($('fin').files[0]) lerArquivo($('fin').files[0]); };
+  $('bsave').onclick = salvarHtml; $('bpdf').onclick = abrirPdf;
+  $('tb').onclick = e => {
+    const th = e.target.closest('th[data-sk]');
+    if (th && !e.target.closest('.hq,.rz')) { setSort(th.dataset.sk); return; }
+    const tg = e.target.closest('.tg[data-t]'), fb = e.target.closest('[data-f]'), tr = e.target.closest('tr[data-k]');
+    if (tg) { const k = tg.dataset.t; S.exp.has(k) ? S.exp.delete(k) : S.exp.add(k); render(); return; }
+    if (fb) { locate(byKey[fb.closest('tr').dataset.k].k, byKey[fb.closest('tr').dataset.k].root); return; }
+    if (tr) { S.sel = tr.dataset.k; render(); openDrawer(S.sel); }
+  };
+  $('tb').ondblclick = e => { const tr = e.target.closest('tr[data-k]'); if (tr) { const n = byKey[tr.dataset.k]; if (n.kids.length) { S.exp.has(n.key) ? S.exp.delete(n.key) : S.exp.add(n.key); render(); } } };
+})();
+</script>
+</body>
+</html>
